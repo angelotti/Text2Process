@@ -59,6 +59,8 @@ public class AnalyzedSentence {
 	 * @param sentenceNumber
 	 */
 	public AnalyzedSentence(T2PSentence sentence, int sentenceNumber) {
+		Exception aux = new Exception("---------------AnalyzedSentence\n"); // not for throwing!
+		aux.printStackTrace(); // if you want it in stdout
 		f_sentence = sentence;
 		setSentenceNumber(sentenceNumber);
 		f_sentenceTags.add("S");
@@ -145,7 +147,9 @@ public class AnalyzedSentence {
 	}
 
 
-	private void analyzseSentence(Tree _mainSentence,Collection<TypedDependency> dependencies ) {		
+	private void analyzseSentence(Tree _mainSentence,Collection<TypedDependency> dependencies ) {	
+		Exception aux = new Exception("---------------analyzseSentence\n"); // not for throwing!
+		aux.printStackTrace(); // if you want it in stdout
 		//checking if the sentence contains several sub-sentences
 		int _sCount = determineSubSentenceCount(_mainSentence);
 		if(_sCount == 0) {
@@ -219,6 +223,8 @@ public class AnalyzedSentence {
 	 * @return
 	 */
 	private List<Tree> findSubSentences(Tree sentence) {
+		Exception aux = new Exception("---------------findSubSentences\n"); // not for throwing!
+		aux.printStackTrace(); // if you want it in stdout
 		List<Tree> _result = SearchUtils.findChildren(f_sentenceTags, sentence);
 		for(Tree t:sentence.children()) {
 			if(t.value().equals("PP") || t.value().equals("ADVP")) {
@@ -230,6 +236,7 @@ public class AnalyzedSentence {
 				}
 			}			
 		}
+		System.out.println("findSubSent===>reuslt: "+_result);
 		return _result;
 	}
 

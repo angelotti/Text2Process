@@ -72,9 +72,13 @@ public class TextAnalyzer {
 	 * 
 	 */
 	public TextAnalyzer() {
+		Exception aux = new Exception("---------------TextAnalyzer.constructor\n"); // not for throwing!
+		aux.printStackTrace(); // if you want it in stdout
 	}
 	
 	public void analyze(Text textToAnalyze) {
+		Exception aux = new Exception("---------------TextAnalyzer.analyze\n"); // not for throwing!
+		aux.printStackTrace(); // if you want it in stdout
 		try{
 			T2PSentence.resetIDs();
 			f_world.clear();

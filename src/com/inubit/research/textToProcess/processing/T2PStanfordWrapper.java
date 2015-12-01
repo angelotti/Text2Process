@@ -52,6 +52,8 @@ public class T2PStanfordWrapper {
 		    	URLConnection uc = u.openConnection();
 			    is = uc.getInputStream(); 				    
 		    }
+//		    Exception aux = new Exception("---------------T2PStanfordWrapper\n"); // not for throwing!
+//			aux.printStackTrace(); // if you want it in stdout
 		    in = new ObjectInputStream(new GZIPInputStream(new BufferedInputStream(is)));  
 		    f_parser = new LexicalizedParser(in);
 			f_tlp = new PennTreebankLanguagePack(); //new ChineseTreebankLanguagePack();
@@ -69,10 +71,18 @@ public class T2PStanfordWrapper {
 		return createText(f,null);
 	}
 	
+	/**
+	 * AAcreates a Text. first gets the sentences from the parsed text through the DocumentPreprocessor object
+	 * in fact he gets the sentences word by word and then builds a T2PSentence and stores it in _result.
+	 * @param f
+	 * @param listener
+	 * @return
+	 */
 	public Text createText(File f, ITextParsingStatusListener listener){
 		try{
 			Text _result = new Text();
 			List<List<? extends HasWord>> _sentences = f_dpp.getSentencesFromText(f.getAbsolutePath());
+//			System.out.println("----------getSentencesFromText "+_sentences.toString());
 //			BufferedReader _r = new BufferedReader(new InputStreamReader(new FileInputStream(f), "Unicode"));
 //			ArrayList<List<? extends HasWord>> _sentences = new ArrayList<List<? extends HasWord>>();
 //			String s;
@@ -81,7 +91,7 @@ public class T2PStanfordWrapper {
 //				sent.add(new Word(s));
 //				_sentences.add(sent);
 //			}
-			
+			//AA this is because for some reason that listener is initialized with the number of sentences
 			if(listener != null) listener.setNumberOfSentences(_sentences.size());
 			int _sentenceNumber = 1;
 			int sentenceOffset = 0;
@@ -92,19 +102,24 @@ public class T2PStanfordWrapper {
 					sentenceOffset += ((Word)_sentence.get(_sentence.size()-1)).endPosition();
 					continue;
 				}
+//				System.out.println("AAA sentence "+_sentence);
 				ArrayList<Word> _list = new ArrayList<Word>();
 				for(HasWord w:_sentence){
 					if(w instanceof Word){
+						System.out.println("WORD  dsf "+w.toString());
 						_list.add((Word) w);
 					}else{
 						System.out.println("Error occured while creating a Word!");
 					}
 				}
 				T2PSentence _s = createSentence(_list);
+//				System.out.println("SENTENCE  "+_s);
 				_s.setCommentOffset(sentenceOffset);
 				_result.addSentence(_s);	
 				if(listener != null) listener.sentenceParsed(_sentenceNumber++);				
 			}
+			Exception aux = new Exception("---------------createText\n"); // not for throwing!
+			aux.printStackTrace(); // if you want it in stdout
 			return _result;
 		}catch(Exception ex){
 			System.out.println("Could not load file: "+f.getPath());
@@ -113,6 +128,12 @@ public class T2PStanfordWrapper {
 		}
 	}
 
+	/**
+	 * takes list of Words and applies the stanford parser to extract the dependencies. its like using coreNLP
+	 * as fas as I know. every sentence holds all of the necessary grammatical syntactical info.
+	 * @param _list
+	 * @return
+	 */
 	private T2PSentence createSentence(ArrayList<Word> _list) {
 		T2PSentence _s = new T2PSentence(_list);
 		Tree _parse = f_parser.apply(_s);

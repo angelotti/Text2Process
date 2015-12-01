@@ -11,5 +11,7 @@
 	<classpathentry kind="lib" path="C:/Users/aggelos/workspace-mars/Text2Process/lib/jwnl.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/aggelos/workspace-mars/Text2Process/lib/stanford-parser-3.5.2-models.jar"/>
+	<classpathentry kind="lib" path="lib/stanford-parser.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

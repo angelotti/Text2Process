@@ -82,6 +82,8 @@ private T2PStanfordWrapper f_stanford = new T2PStanfordWrapper();
      * (Re-)starts analyzing the loaded text and creates a process model
      */
 	public void analyzeText(boolean rebuildTextModel) {
+		Exception aux = new Exception("---------------analyzeText\n"); // not for throwing!
+		aux.printStackTrace(); // if you want it in stdout
 		f_analyzer.analyze(f_text);
         if(rebuildTextModel) {
 			TextModel _model = f_builder.createModel(f_analyzer);
@@ -100,6 +102,8 @@ private T2PStanfordWrapper f_stanford = new T2PStanfordWrapper();
 		f_text = f_stanford.createText(file,tpsl);
 		f_analyzer.clear();
 		analyzeText(true);
+		Exception aux = new Exception("---------------parseText\n"); // not for throwing!
+		aux.printStackTrace(); // if you want it in stdout
 	}
 	
 	/**
