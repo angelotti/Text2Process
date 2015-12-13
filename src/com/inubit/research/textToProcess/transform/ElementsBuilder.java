@@ -24,6 +24,7 @@ import com.inubit.research.textToProcess.worldModel.SpecifiedElement;
 import com.inubit.research.textToProcess.worldModel.Specifier;
 import com.inubit.research.textToProcess.worldModel.Specifier.SpecifierType;
 
+import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeGraphNode;
 import edu.stanford.nlp.trees.TypedDependency;
@@ -34,12 +35,13 @@ import edu.stanford.nlp.trees.TypedDependency;
  */
 public class ElementsBuilder {
 	
-	public static Actor createActor(T2PSentence origin, List<Tree> fullSentence, TreeGraphNode node,Collection<TypedDependency> dependencies) {
+	public static Actor createActor(T2PSentence origin, List<Tree> fullSentence, IndexedWord node,Collection<TypedDependency> dependencies) {
 		Actor _a = null;					
 		String _fullNoun = getFullNoun(node, dependencies);
+		Tree root = origin.getTree();
 		if(!WordNetWrapper.canBePersonOrSystem(_fullNoun, node.value().toLowerCase())) {		
-			//try to extract the real actor here?
-			if(node.parent().value().equals("CD") || WordNetWrapper.canBeGroupAction(node.value())) { //one of the physicians
+			//try to extract the real actor here? node.parent().value().equals("CD")
+			if(SearchUtils.findParentNode(root, node.value()).equals("CD") || WordNetWrapper.canBeGroupAction(node.value())) { //one of the physicians
 				List<TypedDependency> _preps = SearchUtils.findDependency("prep", dependencies);
 				for(TypedDependency spec: _preps) {
 					if(Constants.f_realActorPPIndicators.contains(spec.reln().getSpecific()) && spec.gov().equals(node)) {
@@ -64,7 +66,7 @@ public class ElementsBuilder {
 	}
 
 	private static Actor createActorInternal(T2PSentence origin,
-			 List<Tree> fullSentence, TreeGraphNode node,
+			 List<Tree> fullSentence, IndexedWord node,
 			Collection<TypedDependency> dependencies) {
 		Actor _a = new Actor(origin,node.index(),node.value().toLowerCase());
 		determineNounSpecifiers(origin, fullSentence, node, dependencies, _a);
@@ -73,20 +75,21 @@ public class ElementsBuilder {
 		}	
 		return _a;
 	}
-
-	public static Action createAction(T2PSentence origin, List<Tree> fullSentence, TreeGraphNode node,Collection<TypedDependency> dependencies,boolean active) {
+//TreeGraphNode node
+	public static Action createAction(T2PSentence origin, List<Tree> fullSentence, IndexedWord node,Collection<TypedDependency> dependencies,boolean active) {
 		Action _result = new Action(origin,node.index(),node.value());
+		Tree root = origin.getTree();
 		//search for an auxiliary verb
 		String _aux = getAuxiliaries(node, dependencies);
 		if(_aux.length() > 0)
 			_result.setAux(_aux);
-		TreeGraphNode _mod = getModifiers(node, dependencies);
+		IndexedWord _mod = getModifiers(node, dependencies);
 		if(_mod != null) {
 			_result.setMod(_mod.value());
 			_result.setModPos(_mod.index());			
 		}
 		_result.setNegated(isNegated(node,dependencies));	
-		TreeGraphNode _cop = getCop(node, dependencies);
+		IndexedWord _cop = getCop(node, dependencies);
 		if(_cop != null) {
 			_result.setCop(_cop.value(),_cop.index());
 		}	
@@ -94,9 +97,10 @@ public class ElementsBuilder {
 		if(_prt.length() > 0) {
 			_result.setPrt(_prt);
 		}	
-		TreeGraphNode _iobj = getIObj(node, dependencies);
+		IndexedWord _iobj = getIObj(node, dependencies);
+		Tree iobjTreeNode = SearchUtils.findTreeNode(root, _iobj.value());
 		if(_iobj != null) {
-			Specifier _sp = new Specifier(origin,_iobj.index(),PrintUtils.toString(_iobj.getLeaves()));
+			Specifier _sp = new Specifier(origin,_iobj.index(),PrintUtils.toString(iobjTreeNode.getLeaves()));
 			_sp.setSpecifierType(SpecifierType.IOBJ);
 			_result.addSpecifiers(_sp);
 		}	
@@ -108,20 +112,21 @@ public class ElementsBuilder {
 		for(TypedDependency td:_toCheck) {
 			if(td.gov().equals(node)) {
 				if(td.reln().getShortName().equals("dep")) {
-					//only consider verbs and forwards dependencies
-					if(!td.dep().parent().value().startsWith("V") || (td.dep().index()<td.gov().index())) {						
+					//only consider verbs and forwards dependencies, td.dep().parent().value()
+					if(!SearchUtils.findParentNode(root, td.dep().value()).value().startsWith("V") || (td.dep().index()<td.gov().index())) {						
 						continue;
 					}
 				}
 				//found something
-				TreeGraphNode _xcompNode = td.dep();
+//				TreeGraphNode _xcompNode = td.dep();
+				IndexedWord _xcompNode = td.dep();
 				Action _xcomp = createAction(origin, fullSentence, _xcompNode, dependencies, true);
 				_result.setXcomp(_xcomp);				
 				break;
 			}
 		}
 		//extracting further information and specifiers
-		Tree _vpHead = SearchUtils.getFullPhraseTree("VP",node);	
+		Tree _vpHead = SearchUtils.findParentParent(root, node.value()); //("VP",node);	
 		extractSBARSpecifier(origin, fullSentence, _result, _vpHead,node);
 		extractPPSpecifier(origin, fullSentence, _result, node,dependencies);
 		extractRCMODSpecifier(origin, _result, node,dependencies);
@@ -135,7 +140,7 @@ public class ElementsBuilder {
 	 * @param fullSentence 
 	 * @return
 	 */
-	private static void checkDobj(TreeGraphNode node,Collection<TypedDependency> dependencies,Action result,T2PSentence origin, List<Tree> fullSentence) {
+	private static void checkDobj(IndexedWord node,Collection<TypedDependency> dependencies,Action result,T2PSentence origin, List<Tree> fullSentence) {
 		List<String> _lookFor = ListUtils.getList("dobj");
 		List<TypedDependency> _toCheck = SearchUtils.findDependency(_lookFor,dependencies);
 		for(TypedDependency td:_toCheck) {
@@ -155,7 +160,7 @@ public class ElementsBuilder {
 	 * @param dependencies
 	 * @return
 	 */
-	private static TreeGraphNode getCop(TreeGraphNode node, Collection<TypedDependency> dependencies) {
+	private static IndexedWord getCop(IndexedWord node, Collection<TypedDependency> dependencies) {
 		List<TypedDependency> _toCheck = SearchUtils.findDependency(ListUtils.getList("cop"),dependencies);
 		for(TypedDependency td:_toCheck) {
 			if(td.dep().equals(node)) {
@@ -171,7 +176,7 @@ public class ElementsBuilder {
 	 * @param dependencies
 	 * @return
 	 */
-	private static String getPrt(TreeGraphNode node, Collection<TypedDependency> dependencies) {
+	private static String getPrt(IndexedWord node, Collection<TypedDependency> dependencies) {
 		List<String> _lookFor = ListUtils.getList("prt");
 		return findDependants(node, dependencies, _lookFor,true);	
 	}
@@ -181,7 +186,7 @@ public class ElementsBuilder {
 	 * @param dependencies
 	 * @return
 	 */
-	private static TreeGraphNode getIObj(TreeGraphNode node, Collection<TypedDependency> dependencies) {
+	private static IndexedWord getIObj(IndexedWord node, Collection<TypedDependency> dependencies) {
 		List<TypedDependency> _toCheck = SearchUtils.findDependency(ListUtils.getList("iobj"),dependencies);
 		for(TypedDependency td:_toCheck) {
 			if(td.dep().equals(node)) {
@@ -199,8 +204,8 @@ public class ElementsBuilder {
 	 * @param dependencies
 	 * @return
 	 */
-	private static boolean isNegated(TreeGraphNode node,Collection<TypedDependency> dependencies) {
-		TreeGraphNode _node = node;
+	private static boolean isNegated(IndexedWord node,Collection<TypedDependency> dependencies) {
+		IndexedWord _node = node;
 		//setting node to the object in case of a cop sentence (see example in documentation)
 		List<TypedDependency> _toCheck = SearchUtils.findDependency("cop",dependencies);
 		for(TypedDependency td:_toCheck) {
@@ -218,12 +223,12 @@ public class ElementsBuilder {
 		return false;
 	}
 
-	private static String getAuxiliaries(TreeGraphNode node, Collection<TypedDependency> dependencies) {
+	private static String getAuxiliaries(IndexedWord node, Collection<TypedDependency> dependencies) {
 		List<String> _lookFor = ListUtils.getList("aux","auxpass");
 		return findDependants(node, dependencies, _lookFor,true);
 	}
 
-	private static String findDependants(TreeGraphNode node,Collection<TypedDependency> dependencies, List<String> lookFor,boolean isGovernor) {
+	private static String findDependants(IndexedWord node,Collection<TypedDependency> dependencies, List<String> lookFor,boolean isGovernor) {
 		List<TypedDependency> _toCheck = SearchUtils.findDependency(lookFor,dependencies);
 		StringBuilder _b = new StringBuilder();
 		for(TypedDependency td:_toCheck) {
@@ -245,7 +250,7 @@ public class ElementsBuilder {
 		return _b.toString();
 	}
 	
-	private static TreeGraphNode getModifiers(TreeGraphNode node, Collection<TypedDependency> dependencies) {
+	private static IndexedWord getModifiers(IndexedWord node, Collection<TypedDependency> dependencies) {
 		List<TypedDependency> _toCheck = SearchUtils.findDependency(ListUtils.getList("advmod","acomp"),dependencies);
 		for(TypedDependency td:_toCheck) {
 			if(td.gov().equals(node)) {
@@ -313,7 +318,7 @@ public class ElementsBuilder {
 	 * @param dependencies
 	 * @return
 	 */
-	public static ExtractedObject createObject(T2PSentence origin, List<Tree> fullSentence, TreeGraphNode node,Collection<TypedDependency> dependencies) {
+	public static ExtractedObject createObject(T2PSentence origin, List<Tree> fullSentence, IndexedWord node,Collection<TypedDependency> dependencies) {
 		String _fullNoun = getFullNoun(node, dependencies);
 		//TODO systems should be marked so a reference resolution of resources can refer to them
 		if(WordNetWrapper.canBePersonOrSystem(_fullNoun, node.value().toLowerCase()) || ProcessingUtils.canBePersonPronoun(node.value())) {
@@ -329,8 +334,8 @@ public class ElementsBuilder {
 		if(Constants.DEBUG_EXTRACTION) System.out.println("Identified object: "+_r);
 		return _r;				
 	}
-
-	private static String getFullNoun(TreeGraphNode node,
+//changed TreeGraphNode node
+	private static String getFullNoun(IndexedWord node,
 			Collection<TypedDependency> dependencies) {
 		List<TypedDependency> _toCheck = SearchUtils.findDependency(ListUtils.getList("nn","dep"),dependencies);
 		//extracting full compound name
@@ -359,7 +364,7 @@ public class ElementsBuilder {
 	}
 	
 	private static void determineNounSpecifiers(T2PSentence origin,
-			List<Tree> fullSentence, TreeGraphNode node,
+			List<Tree> fullSentence, IndexedWord node,
 			Collection<TypedDependency> dependencies, ExtractedObject element) {
 		
 		
@@ -371,12 +376,16 @@ public class ElementsBuilder {
 		getSpecifierFromDependencies(origin,node,dependencies,element,"num",SpecifierType.NUM);
 		
 		//extracting further information and specifiers
-		Tree _tree = SearchUtils.getFullPhraseTree("NP",node);	
+		Tree originTree = origin.getTree();
+		Tree parentNode = SearchUtils.findTreeNode(originTree, node.value());
+		Tree _tree = SearchUtils.findParentParent(originTree, node.value());	
 		extractSBARSpecifier(origin, fullSentence, element, _tree,node);		
-		extractPPSpecifier(origin, fullSentence, element, node,dependencies);				
-		if(Constants.f_relativeResolutionTags.contains(node.parent().value()) ||
+		extractPPSpecifier(origin, fullSentence, element, node,dependencies);	
+		//node.parent().value()
+		if(Constants.f_relativeResolutionTags.contains(parentNode.value()) ||
 				Constants.f_relativeResolutionWords.contains(node.value())) {
-			if(node.parent().parent().children().length == 1) {
+			//node.parent().parent().children().length
+			if(_tree.children().length == 1) {
 				for(Specifier spec:element.getSpecifiers(SpecifierType.PP)) {
 					if("of".equals(spec.getHeadWord())) {
 						return;
@@ -395,7 +404,7 @@ public class ElementsBuilder {
 	 * @param dependencies
 	 * @param element
 	 */
-	private static void findINFMODSpecifiers(T2PSentence origin,TreeGraphNode node, Collection<TypedDependency> dependencies,
+	private static void findINFMODSpecifiers(T2PSentence origin,IndexedWord node, Collection<TypedDependency> dependencies,
 			SpecifiedElement element) {
 		List<TypedDependency> _toCheck = SearchUtils.findDependency("infmod",dependencies);
 		if(_toCheck.size() > 0) {
@@ -428,13 +437,14 @@ public class ElementsBuilder {
 	 * @param element
 	 */
 	private static void getPARTMODSpecifiers(T2PSentence origin,
-			TreeGraphNode node, Collection<TypedDependency> dependencies,
+			IndexedWord node, Collection<TypedDependency> dependencies,
 			ExtractedObject element) {
 		List<TypedDependency> _toCheck = SearchUtils.findDependency("partmod",dependencies);
+		Tree root = origin.getTree();
 		if(_toCheck.size() > 0) {
 			for(TypedDependency td:_toCheck) {
 				if(td.gov().equals(node)) {					
-					String _phr = SearchUtils.getFullPhrase("VP", td.dep());
+					String _phr = SearchUtils.getFullPhrase("VP", SearchUtils.findParentParent(root, td.dep().value()));
 					//found it					
 					Specifier _sp = new Specifier(origin,td.dep().index(),_phr);
 					_sp.setSpecifierType(SpecifierType.PARTMOD);
@@ -456,20 +466,23 @@ public class ElementsBuilder {
 		}
 	}
 	
-	private static void extractPPSpecifier(T2PSentence origin, List<Tree> fullSentence, SpecifiedElement element,TreeGraphNode node, Collection<TypedDependency> dependencies) {
+	private static void extractPPSpecifier(T2PSentence origin, List<Tree> fullSentence, SpecifiedElement element,IndexedWord node, Collection<TypedDependency> dependencies) {
 		//search for a PP determiner
 		List<TypedDependency> _toCheck = SearchUtils.findDependency(ListUtils.getList("prep","prepc"),dependencies);
 		List<TypedDependency> _rcMod = SearchUtils.findDependency(ListUtils.getList("rcmod"),dependencies);
+		Tree root = origin.getTree();
+		Tree treeNode;
 		for(TypedDependency td:_toCheck) {
 			String _cop = null;
 			if(element instanceof Action) {
 				Action _act = (Action)element;
 				_cop = _act.getCop();
 			}
-			if((td.gov().equals(node) || td.gov().value().equals(_cop)) && !partOfrcMod(_rcMod, td)) {				
+			if((td.gov().equals(node) || td.gov().value().equals(_cop)) && !partOfrcMod(origin, _rcMod, td)) {				
 				//found something
-				Tree _phraseTree = SearchUtils.getFullPhraseTree("PP", td.dep());
-				if(!_phraseTree.parent().value().equals("PRN")) {
+//				Tree _phraseTree = SearchUtils.getFullPhraseTree("PP", treeNode); and then search for the wanted subtree
+				Tree _phraseTree = SearchUtils.findParentParent(root, td.dep().value());
+				if(!_phraseTree.value().equals("PRN")) {
 					_phraseTree = deleteBranches(ListUtils.getList("S","SBAR"),_phraseTree);
 					String _phrase = PrintUtils.toString(_phraseTree);
 					String _specific = null;
@@ -481,7 +494,9 @@ public class ElementsBuilder {
 						}
 						Specifier _sp = new Specifier(origin,td.dep().index(),_phrase);
 						_sp.setSpecifierType(SpecifierType.PP);
-						if(td.dep().parent().parent().value().startsWith("NP")) {
+						//td.dep().parent().parent().value().startsWith("NP") -> wants to find the parent parent
+						;
+						if(SearchUtils.findParentParent(root, td.dep().value()).value().equals("NP")) {
 							ExtractedObject _object = createObject(origin, fullSentence, td.dep(), dependencies);
 							_sp.setObject(_object);	
 							//TODO add conjunct elements							
@@ -495,9 +510,10 @@ public class ElementsBuilder {
 		}
 	}
 	
-	private static void extractRCMODSpecifier(T2PSentence origin, SpecifiedElement element,TreeGraphNode node, Collection<TypedDependency> dependencies) {
+	private static void extractRCMODSpecifier(T2PSentence origin, SpecifiedElement element,IndexedWord node, Collection<TypedDependency> dependencies) {
 		//search for a rcmod determiner
 		List<TypedDependency> _toCheck = SearchUtils.findDependency(ListUtils.getList("rcmod"),dependencies);
+		Tree root = origin.getTree();
 		for(TypedDependency td:_toCheck) {
 			String _cop = null;
 			if(element instanceof Action) {
@@ -506,7 +522,7 @@ public class ElementsBuilder {
 			}
 			if(td.dep().equals(node) || td.dep().value().equals(_cop)) {				
 				//found something
-				Tree _phraseTree = SearchUtils.getFullPhraseTree("PP", td.gov());
+				Tree _phraseTree = SearchUtils.findParentParent(root, td.gov().value());//getFullPhraseTree("PP", td.gov());
 				if(_phraseTree != null) {//it was not a PP, but e.g. an SBAR
 					_phraseTree = deleteBranches(ListUtils.getList("S","SBAR"),_phraseTree);
 					String _phrase = PrintUtils.toString(_phraseTree);
@@ -518,10 +534,11 @@ public class ElementsBuilder {
 		}
 	}
 
-	private static boolean partOfrcMod(List<TypedDependency> _rcMod,TypedDependency td) {
+	private static boolean partOfrcMod(T2PSentence origin, List<TypedDependency> _rcMod,TypedDependency td) {
+		Tree root = origin.getTree();
 		for(TypedDependency rcm:_rcMod) {
 			if(rcm.gov().equals(td.dep())) {
-				Tree _phraseTree = SearchUtils.getFullPhraseTree("PP", td.dep());
+				Tree _phraseTree = SearchUtils.findParentParent(root, td.dep().value());//getFullPhraseTree("PP", td.dep());
 				_phraseTree = deleteBranches(ListUtils.getList("S","SBAR"),_phraseTree);
 				String _phrase = PrintUtils.toString(_phraseTree).toLowerCase();
 				if(Constants.f_conditionIndicators.contains(_phrase)) {
@@ -570,7 +587,7 @@ public class ElementsBuilder {
 		
 	}
 
-	private static void extractSBARSpecifier(T2PSentence origin,List<Tree> fullSentence, SpecifiedElement element, Tree phraseHead, TreeGraphNode node) {
+	private static void extractSBARSpecifier(T2PSentence origin,List<Tree> fullSentence, SpecifiedElement element, Tree phraseHead, IndexedWord node) {
 		//search for an SBAR determiner
 		ArrayList<String> _excludes = new ArrayList<String>();
 		List<Tree> _sbarList = SearchUtils.find("SBAR", phraseHead,_excludes);
@@ -601,12 +618,12 @@ public class ElementsBuilder {
 	 * @param _a
 	 */
 	private static void findAMODSpecifiers(T2PSentence origin,
-			TreeGraphNode node, Collection<TypedDependency> dependencies,
+			IndexedWord node, Collection<TypedDependency> dependencies,
 			SpecifiedElement element) {
 		getSpecifierFromDependencies(origin, node, dependencies, element, "amod", SpecifierType.AMOD);
 	}
 
-	private static void findNNSpecifiers(T2PSentence origin,TreeGraphNode node, Collection<TypedDependency> dependencies,
+	private static void findNNSpecifiers(T2PSentence origin,IndexedWord node, Collection<TypedDependency> dependencies,
 			SpecifiedElement element) {
 		getSpecifierFromDependencies(origin, node, dependencies, element,"nn",SpecifierType.NN);
 		List<TypedDependency> _toCheck = SearchUtils.findDependency("dep",dependencies);
@@ -627,7 +644,7 @@ public class ElementsBuilder {
 	}
 
 	private static void getSpecifierFromDependencies(T2PSentence origin,
-			TreeGraphNode node, Collection<TypedDependency> dependencies,
+			IndexedWord node, Collection<TypedDependency> dependencies,
 			SpecifiedElement element, String depType, SpecifierType specifierType) {
 		//search for specifiers
 		List<TypedDependency> _toCheck = SearchUtils.findDependency(depType,dependencies);
@@ -661,7 +678,7 @@ public class ElementsBuilder {
 	}
 	
 
-	private static void findDeterminer(TreeGraphNode node,Collection<TypedDependency> dependencies, ExtractedObject _r) {
+	private static void findDeterminer(IndexedWord node,Collection<TypedDependency> dependencies, ExtractedObject _r) {
 		//search for a determiner/article etc.
 		List<TypedDependency> _toCheck = new ArrayList<TypedDependency>();
 		_toCheck.addAll(SearchUtils.findDependency("poss",dependencies));

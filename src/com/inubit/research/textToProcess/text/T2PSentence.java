@@ -8,13 +8,15 @@ import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.trees.GrammaticalStructure;
 import edu.stanford.nlp.trees.Tree;
 
+
 /**
- * Simple Data structure, based on the Stanford sentence.
+ * Simple Data structure, based on the Stanford sentence. NOT ANYMORE
+ * Sentence in the CoreNLP provides static util methods.
  * Adds a unique ID to enable tracing
  * @author ff
  *
  */
-public class T2PSentence extends Sentence<Word> {
+public class T2PSentence {
 	
 	/**
 	 * 
@@ -24,12 +26,14 @@ public class T2PSentence extends Sentence<Word> {
 	private Tree f_tree; //syntax Tree
 	private GrammaticalStructure f_gramStruc; //dependencies
 	private int f_offset;
+	private String theSentence;
 	
 	/**
 	 * Constructs an empty sentence.
 	 */
-	public T2PSentence() {
-		super();
+	public T2PSentence(String s) {
+//		super();
+		theSentence = s;
 	}
 
 	/**
@@ -38,7 +42,7 @@ public class T2PSentence extends Sentence<Word> {
 	 * @param initialCapacity The initial sentence allocation size
 	 */
 	public T2PSentence(int initialCapacity) {
-		super(initialCapacity);
+//		super(initialCapacity);
 	}
 
 
@@ -49,7 +53,7 @@ public class T2PSentence extends Sentence<Word> {
 	 *          out of.
 	 */
 	public T2PSentence(Collection<Word> w) {
-		super(w);
+//		super(w);
 	}
 
 	
@@ -58,39 +62,39 @@ public class T2PSentence extends Sentence<Word> {
 		return f_id;
 	}
 	
-	/**
-	 * gets the length of the sentence (in characters)
-	 * @return
-	 */
-	public int getCharLength() {
-		return getEndPosition() - getBeginPosition();
-				
-	}
-	
-	/**
-	 * return the position of the first letter of the first word in the original text.
-	 * @return
-	 */
-	public int getBeginPosition() {
-		if(size() > 0) {
-			return this.get(0).beginPosition()-f_offset;
-		}
-		return -1;	
-	}
-	
-	/**
-	 * returns the position of the last letter of the last word in the original text.
-	 * @return
-	 */
-	public int getEndPosition() {
-		if(size() > 0) {
-			return this.get(this.size()-1).endPosition()-f_offset;
-		}
-		return -1;		
-	}
+//	/**
+//	 * gets the length of the sentence (in characters)
+//	 * @return
+//	 */
+//	public int getCharLength() {
+//		return getEndPosition() - getBeginPosition();
+//				
+//	}
+//	
+//	/**
+//	 * return the position of the first letter of the first word in the original text.
+//	 * @return
+//	 */
+//	public int getBeginPosition() {
+//		if(size() > 0) {
+//			return this.get(0).beginPosition()-f_offset;
+//		}
+//		return -1;	
+//	}
+//	
+//	/**
+//	 * returns the position of the last letter of the last word in the original text.
+//	 * @return
+//	 */
+//	public int getEndPosition() {
+//		if(size() > 0) {
+//			return this.get(this.size()-1).endPosition()-f_offset;
+//		}
+//		return -1;		
+//	}
 	
 	public String toStringFormated() {
-		return PTBTokenizer.ptb2Text(toString(true));
+		return PTBTokenizer.ptb2Text(toString());
 	}
 	
 	/**
@@ -139,6 +143,7 @@ public class T2PSentence extends Sentence<Word> {
 	
 	@Override
 	public String toString() {
+		System.out.println(theSentence);
 		return super.toString();
 	}
 	

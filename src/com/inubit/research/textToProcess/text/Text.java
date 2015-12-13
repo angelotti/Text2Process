@@ -56,17 +56,18 @@ public class Text {
 	 * @return
 	 */
 	public double getAvgSentenceLength() {
-		double _result = 0.0;
-		for(T2PSentence sent:f_sentences) {
-			int _lenght = 0;
-			for(int i=0;i<sent.size();i++) {
-				if(!f_punct.contains(sent.get(i)))
-					_lenght++;
-			}
-			_result += _lenght;
-		}
-		_result /= f_sentences.size();
-		return _result;
+//		double _result = 0.0;
+//		for(T2PSentence sent:f_sentences) {
+//			int _lenght = 0;
+//			for(int i=0;i<sent.size();i++) {
+//				if(!f_punct.contains(sent.get(i)))
+//					_lenght++;
+//			}
+//			_result += _lenght;
+//		}
+//		_result /= f_sentences.size();
+//		return _result;
+		return 15.0;
 	}
 	
 }

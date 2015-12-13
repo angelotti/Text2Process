@@ -27,6 +27,7 @@ import com.inubit.research.textToProcess.worldModel.Specifier;
 import com.inubit.research.textToProcess.worldModel.WorldModel;
 import com.inubit.research.textToProcess.worldModel.Specifier.SpecifierType;
 
+import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeGraphNode;
 import edu.stanford.nlp.trees.TypedDependency;
@@ -130,21 +131,35 @@ public class AnalyzedSentence {
 
 
 	/**
-	 * @param gov
+	 * changed the param from TreeGraphNode to IndexedWord
+	 * @param indexedWord
 	 * @return
 	 */
-	private Action getActionContaining(TreeGraphNode gov) {
+	private Action getActionContaining(IndexedWord indexedWord) {
 		for(Action a:f_actions) {
-			if(a.getWordIndex() == gov.index() 
-					|| (a.getXcomp() != null && a.getXcomp().getWordIndex() == gov.index())
-					|| (a.getCopIndex() == gov.index())
-					|| (a.getObject() != null && a.getObject().getWordIndex() == gov.index())
+			if(a.getWordIndex() == indexedWord.index() 
+					|| (a.getXcomp() != null && a.getXcomp().getWordIndex() == indexedWord.index())
+					|| (a.getCopIndex() == indexedWord.index())
+					|| (a.getObject() != null && a.getObject().getWordIndex() == indexedWord.index())
 					/*|| (a.getObject() != null && a.getObject().getWordIndex() == gov.index())*/) {
 				return a;
 			}
 		}
 		return null;
 	}
+	
+//	private Action getActionContaining(TreeGraphNode gov) {
+//		for(Action a:f_actions) {
+//			if(a.getWordIndex() == gov.index() 
+//					|| (a.getXcomp() != null && a.getXcomp().getWordIndex() == gov.index())
+//					|| (a.getCopIndex() == gov.index())
+//					|| (a.getObject() != null && a.getObject().getWordIndex() == gov.index())
+//					/*|| (a.getObject() != null && a.getObject().getWordIndex() == gov.index())*/) {
+//				return a;
+//			}
+//		}
+//		return null;
+//	}
 
 
 	private void analyzseSentence(Tree _mainSentence,Collection<TypedDependency> dependencies ) {	
@@ -499,7 +514,8 @@ public class AnalyzedSentence {
 	private List<Actor> determineSubjects(Tree sentence, Collection<TypedDependency> dependencies, boolean active ) {
 		ArrayList<Actor> _result = new ArrayList<Actor>();
 		//determine subject
-		TreeGraphNode _mainActor = null;
+		//TreeGraphNode _mainActor = null;
+		IndexedWord _mainActor = null;
 		if(active) {
 			List<TypedDependency> _nsubj = SearchUtils.findDependency("nsubj",dependencies);
 			excludeRelativeClauses(sentence,_nsubj);
@@ -769,13 +785,14 @@ public class AnalyzedSentence {
 			}else if(_nsubjpass.size() > 1) {
 				System.out.println("Passive sentence with more than one subject!?!?");
 				if(Constants.DEBUG_EXTRACTION) printToConsole(_nsubjpass);
-				TreeGraphNode _object = _nsubjpass.get(0).dep();				
+				IndexedWord _object = _nsubjpass.get(0).dep();				
 				ExtractedObject _obj = ElementsBuilder.createObject(f_sentence, f_fullSentence, _object,dependencies);
 				_obj.setSubjectRole(true); //although it is an object it is the syntactic subject of the sentence
 				_result.add(_obj);
+				//passthetree also
 				checkNPForSubsentence(_object,dependencies,_obj);
 			}else {				
-				TreeGraphNode _object = _nsubjpass.get(0).dep();				
+				IndexedWord _object = _nsubjpass.get(0).dep();				
 				ExtractedObject _obj = ElementsBuilder.createObject(f_sentence, f_fullSentence, _object,dependencies);
 				_obj.setSubjectRole(true); //although it is an object it is the syntactic subject of the sentence
 				_result.add(_obj);
@@ -900,7 +917,7 @@ public class AnalyzedSentence {
 	/**
 	 * 
 	 */
-	private void checkNPForSubsentence(TreeGraphNode tgNode,Collection<TypedDependency> dependencies,ExtractedObject obj) {
+	private void checkNPForSubsentence(IndexedWord tgNode,Collection<TypedDependency> dependencies,ExtractedObject obj) {
 		if(!f_ignoreNPSubSentences) {
 			Tree _head = SearchUtils.getFullPhraseTree("NP",tgNode);	
 			checkForSubSentences(_head, dependencies, obj,true);

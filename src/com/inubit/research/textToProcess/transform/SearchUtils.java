@@ -10,12 +10,14 @@ package com.inubit.research.textToProcess.transform;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import com.inubit.research.textToProcess.worldModel.Action;
 import com.inubit.research.textToProcess.worldModel.SpecifiedElement;
 import com.inubit.research.textToProcess.worldModel.Specifier;
 
+import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeGraphNode;
 import edu.stanford.nlp.trees.TypedDependency;
@@ -59,10 +61,11 @@ public class SearchUtils {
 			Collection<TypedDependency> _dependencies, int start, int end) {
 		ArrayList<TypedDependency> _result = new ArrayList<TypedDependency>();
 		for(TypedDependency td:_dependencies) {
+//			   (( start <= td.gov().label().index() && (end >= td.gov().label().index())) 
 			if(td.reln().getShortName().equals("rcmod") ||
-			   (( start <= td.gov().label().index() && (end >= td.gov().label().index())) 
+			   (( start <= td.gov().index() && (end >= td.gov().index())) 
 					&&
-			   ( start <= td.dep().label().index() && (end >= td.dep().label().index())))) {
+			   ( start <= td.dep().index() && (end >= td.dep().index())))) {
 				_result.add(td);
 			}
 		}
@@ -263,17 +266,19 @@ public class SearchUtils {
 		return false;
 	}
 
-	public static String getFullNounPhrase(TreeGraphNode node) {
+	public static String getFullNounPhrase(Tree node) {
 		return getFullPhrase("NP", node);
 	}
 	
-	public static String getFullPhrase(String type, TreeGraphNode node) {
-		Tree _subject = getFullPhraseTree(type, node);
+	public static String getFullPhrase(String type, Tree node) {
+//		Tree _subject = getFullPhraseTree(type, node);
+		Tree _subject = node;
 		return PrintUtils.toString(_subject.getLeaves());
 	}
 
-	public static Tree getFullPhraseTree(String type, TreeGraphNode node) {		
-		TreeGraphNode _subject = node;
+	public static Tree getFullPhraseTree(String type, Tree node) {		
+		Tree _subject = node;
+		//need to find the node in the sentence tree.                            
 		boolean going_up = true;
 		while((going_up) || _subject.parent().label().value().equals(type)) {
 			_subject = (TreeGraphNode)_subject.parent();
@@ -377,6 +382,58 @@ public class SearchUtils {
 			}
 		}
 		return _result;
+	}
+	
+	
+	public static Tree findTreeNode (Tree tree, String value) {
+		Tree result,t ;
+		result = null;
+		Iterator it = tree.iterator();
+		while(it.hasNext()){
+			t = (Tree) it.next();
+			if(t.value().equals(value)){
+				result = t;
+			} else {
+				
+			}
+			System.out.println("Iter "+t.nodeNumber(tree)+" "+t.value());
+		}
+		return result;
+	}
+	
+	public static Tree findParentNode(Tree tree, String value) {
+		Tree result,t, temp;
+		result = temp = null;
+		Iterator it = tree.iterator();
+		while(it.hasNext()){
+			t = (Tree) it.next();
+			if(t.value().equals(value) && t.isLeaf()){
+				result = temp; //if true the previous node is his parent
+			} 
+			temp = t;
+			System.out.println("findParent "+t.nodeNumber(tree)+" "+t.value());
+		}
+		return result;
+	}
+	
+	/*
+	 * finds the parent of parent node, this means some kind of phrase. e.g. NP->NN->computer
+	 * this method replaced the getFullPhraseTree method
+	 */
+	public static Tree findParentParent(Tree tree, String value) {
+		Tree result,t, temp,temp2;
+		result = temp = temp2 = null;
+		Iterator it = tree.iterator();
+		while(it.hasNext()){
+			t = (Tree) it.next();
+			if(t.value().equals(value) && t.isLeaf()){
+				result = temp2; //if true the preprevious node is his parent
+			}
+			temp2 = temp;
+			temp = t;
+			System.out.println("findParentParent "+t.nodeNumber(tree)+" "+t.value());
+		}
+		return result;
 	}
 	
 }

@@ -39,6 +39,7 @@ import com.inubit.research.textToProcess.worldModel.Flow.FlowDirection;
 import com.inubit.research.textToProcess.worldModel.Flow.FlowType;
 import com.inubit.research.textToProcess.worldModel.Specifier.SpecifierType;
 
+import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.trees.TreeGraphNode;
 import edu.stanford.nlp.trees.TypedDependency;
 
@@ -1125,7 +1126,7 @@ public class TextAnalyzer {
 			Collection<TypedDependency> _deps = _base.getGrammaticalStructure().typedDependenciesCollapsed();
 			List<TypedDependency> _markers = SearchUtils.findDependency("mark",_deps);
 			for(TypedDependency td:_markers) {
-				TreeGraphNode _lookFor = td.gov();
+				IndexedWord _lookFor = td.gov();
 				Action _a = findAction(_lookFor,sentence.getExtractedActions(),_deps);
 				if(_a != null) {
 					String _val = td.dep().value().toLowerCase();
@@ -1136,7 +1137,7 @@ public class TextAnalyzer {
 			}			
 			_markers = SearchUtils.findDependency(ListUtils.getList("advmod"),_deps);
 			for(TypedDependency td:_markers) {
-				TreeGraphNode _lookFor = td.gov();
+				IndexedWord _lookFor = td.gov();
 				Action _a = findAction(_lookFor,sentence.getExtractedActions(),_deps);
 				if(_a != null && _a.getWordIndex()>td.dep().index()) {
 					String _val = td.dep().value().toLowerCase();
@@ -1153,7 +1154,7 @@ public class TextAnalyzer {
 			}
 			_markers = SearchUtils.findDependency("prepc",_deps); //e.g. except
 			for(TypedDependency td:_markers) {
-				TreeGraphNode _lookFor = td.dep();
+				IndexedWord _lookFor = td.dep();
 				Action _a = findAction(_lookFor,sentence.getExtractedActions(),_deps);
 				if(_a != null) {
 					if(Constants.DEBUG_MARKING)
@@ -1164,7 +1165,7 @@ public class TextAnalyzer {
 			_markers = SearchUtils.findDependency("complm",_deps); //whether
 			for(TypedDependency td:_markers) {
 				if(!td.dep().value().equals("that")) {
-					TreeGraphNode _lookFor = td.gov();
+					IndexedWord _lookFor = td.gov();
 					Action _a = findAction(_lookFor,sentence.getExtractedActions(),_deps);
 					if(_a != null) {
 						String _val = td.dep().value().toLowerCase();
@@ -1289,8 +1290,9 @@ public class TextAnalyzer {
 	 * @param extractedActions
 	 * @return
 	 */
-	private Action findAction(TreeGraphNode node, List<Action> list, Collection<TypedDependency> deps) {
+	private Action findAction(IndexedWord node, List<Action> list, Collection<TypedDependency> deps) {
 		for(Action a:list) {
+			//TODO i need somehow know the index of this node if it was a treeGraphNode.
 			if(a.getWordIndex() == node.index()) {
 				return a;
 			}
