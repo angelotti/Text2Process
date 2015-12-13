@@ -98,8 +98,11 @@ public class ElementsBuilder {
 			_result.setPrt(_prt);
 		}	
 		IndexedWord _iobj = getIObj(node, dependencies);
-		Tree iobjTreeNode = SearchUtils.findTreeNode(root, _iobj.value());
-		if(_iobj != null) {
+		if (_iobj != null) {
+			System.out.println("createAction "+_iobj.value()+" "+root.value());
+			Tree iobjTreeNode = SearchUtils.findTreeNode(root, _iobj.value());
+//		}
+//		if(_iobj != null) {
 			Specifier _sp = new Specifier(origin,_iobj.index(),PrintUtils.toString(iobjTreeNode.getLeaves()));
 			_sp.setSpecifierType(SpecifierType.IOBJ);
 			_result.addSpecifiers(_sp);

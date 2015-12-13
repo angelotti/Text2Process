@@ -1,7 +1,9 @@
 package com.inubit.research.textToProcess.text;
 
 import java.util.Collection;
+import java.util.List;
 
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.Sentence;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.process.PTBTokenizer;
@@ -27,13 +29,17 @@ public class T2PSentence {
 	private GrammaticalStructure f_gramStruc; //dependencies
 	private int f_offset;
 	private String theSentence;
+	private List<CoreLabel> wordTokens;
 	
+	
+
 	/**
 	 * Constructs an empty sentence.
 	 */
-	public T2PSentence(String s) {
+	public T2PSentence(String s, List<CoreLabel> wordTokens) {
 //		super();
 		theSentence = s;
+		this.wordTokens = wordTokens;
 	}
 
 	/**
@@ -56,7 +62,17 @@ public class T2PSentence {
 //		super(w);
 	}
 
+	public CoreLabel getWordToken(int i) {
+		return wordTokens.get(i);
+	}
+
+	public void setWordTokens(List<CoreLabel> wordTokens) {
+		this.wordTokens = wordTokens;
+	}
 	
+	public int size() {
+		return wordTokens.size();
+	}
 	
 	public int getID(){
 		return f_id;

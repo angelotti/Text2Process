@@ -63,7 +63,7 @@ public class TextModelBuilder {
 			f_sentenceMap.put(s, _sn);
 			_result.addNode(_sn);
 			for(int w = 0; w<s.size(); w++) {
-				WordNode _wn = new WordNode(s.get(w).value());
+				WordNode _wn = new WordNode(s.getWordToken(w).value());
 				_result.addNode(_wn);
 				_sn.addWord(_wn);
 			}

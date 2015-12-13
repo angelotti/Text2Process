@@ -30,6 +30,7 @@ import com.inubit.research.textToProcess.transform.TextModelBuilder;
 import com.inubit.research.textToProcess.worldModel.Action;
 import com.inubit.research.textToProcess.worldModel.SpecifiedElement;
 
+import angelos.thesis.textToProcess.CoreNlpWrapper;
 import edu.stanford.nlp.trees.TypedDependency;
 
 /**
@@ -43,7 +44,7 @@ import edu.stanford.nlp.trees.TypedDependency;
  */
 public class TextToProcess {
 	
-private T2PStanfordWrapper f_stanford = new T2PStanfordWrapper();
+private CoreNlpWrapper f_stanford = new CoreNlpWrapper();//new T2PStanfordWrapper();
 	
 	private Text f_text;
 	

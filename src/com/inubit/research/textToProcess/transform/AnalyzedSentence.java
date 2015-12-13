@@ -165,6 +165,9 @@ public class AnalyzedSentence {
 	private void analyzseSentence(Tree _mainSentence,Collection<TypedDependency> dependencies ) {	
 		Exception aux = new Exception("---------------analyzseSentence\n"); // not for throwing!
 		aux.printStackTrace(); // if you want it in stdout
+		
+		_mainSentence.pennPrint();
+		
 		//checking if the sentence contains several sub-sentences
 		int _sCount = determineSubSentenceCount(_mainSentence);
 		if(_sCount == 0) {
@@ -219,8 +222,9 @@ public class AnalyzedSentence {
 	 * @param sentence
 	 */
 	private boolean removeChildInCopy(Tree original, Tree copy, Tree remove) {
-		if(original.indexOf(remove) != -1) {
-			ProcessingUtils.removeChild(copy,original.indexOf(remove));
+		int removeIndex = remove.nodeNumber(original);
+		if (removeIndex != -1) {
+			ProcessingUtils.removeChild(copy,removeIndex);
 			return true;
 		}
 		for(int i=0;i<copy.children().length;i++) {
@@ -489,12 +493,12 @@ public class AnalyzedSentence {
 	 */
 	private boolean isActive(Tree sentence, Collection<TypedDependency> dependencies ) {
 		List<TypedDependency> _nsubj = SearchUtils.findDependency(ListUtils.getList("nsubj","csubj","dobj"),dependencies);
-		excludeRelativeClauses(sentence,_nsubj);
+//		excludeRelativeClauses(sentence,_nsubj);
 		if(_nsubj.size() > 0) {
 			return true;
 		}	
 		List<TypedDependency> _nsubjpass = SearchUtils.findDependency(ListUtils.getList("nsubjpass","csubjpass","agent"),dependencies);
-		excludeRelativeClauses(sentence,_nsubjpass);
+//		excludeRelativeClauses(sentence,_nsubjpass);
 		if(_nsubjpass.size() > 0) {
 			return false;
 		}
@@ -518,7 +522,7 @@ public class AnalyzedSentence {
 		IndexedWord _mainActor = null;
 		if(active) {
 			List<TypedDependency> _nsubj = SearchUtils.findDependency("nsubj",dependencies);
-			excludeRelativeClauses(sentence,_nsubj);
+//			excludeRelativeClauses(sentence,_nsubj);
 			if(_nsubj.size() == 0) {
 				if(Constants.DEBUG_EXTRACTION) System.out.println("No active subject was found!");
 			}else {
@@ -532,7 +536,7 @@ public class AnalyzedSentence {
 		}else {
 			//passive sentence
 			List<TypedDependency> _agent = SearchUtils.findDependency("agent",dependencies);
-			excludeRelativeClauses(sentence,_agent);
+//			excludeRelativeClauses(sentence,_agent);
 			if(_agent.size() == 0) {	
 				if(Constants.DEBUG_EXTRACTION) System.out.println("Sentence contains no subject!");
 			}else {
@@ -586,7 +590,7 @@ public class AnalyzedSentence {
 				if((td.gov().value().equalsIgnoreCase(current.getName()) 
 						&& (SearchUtils.filterByGov(td.gov(), _cop)).size()==0) 
 						|| _xcompHit) {
-					TreeGraphNode _otherNode = td.dep();
+					IndexedWord _otherNode = td.dep();
 					SpecifiedElement _newEle;
 					if(object) {
 						if(actor) {
@@ -647,16 +651,16 @@ public class AnalyzedSentence {
 	 * @return
 	 */
 	private List<Action> determineVerb(Tree sentence,boolean active,Collection<TypedDependency> dependencies) {
-		TreeGraphNode _mainPredicate = null;
+		IndexedWord _mainPredicate = null;
 		List<Action> _result = new ArrayList<Action>();
 		if(active) {
 			List<TypedDependency> _nsubj = SearchUtils.findDependency("nsubj",dependencies);
-			excludeRelativeClauses(sentence,_nsubj);		
+//			excludeRelativeClauses(sentence,_nsubj);		
 			if(_nsubj.size() == 0) {
 				//hmm...
 				//could be an imperative, look for a dobj relation
 				List<TypedDependency> _dobj = SearchUtils.findDependency("dobj",dependencies);
-				excludeRelativeClauses(sentence,_dobj);
+//				excludeRelativeClauses(sentence,_dobj);
 				if(_dobj.size() >= 1) {
 					_mainPredicate = _dobj.get(0).gov(); //here several are possible "leave the house and close the window" -> conj will find the rest
 				}
@@ -667,7 +671,7 @@ public class AnalyzedSentence {
 				_mainPredicate = _nsubj.get(0).gov();
 				//check if we do not have a cop present, if so we have to change the main verb
 				List<TypedDependency> _cop = SearchUtils.findDependency("cop",dependencies);
-				excludeRelativeClauses(sentence,_cop);		
+//				excludeRelativeClauses(sentence,_cop);		
 				for(TypedDependency td: _cop) {
 					if(td.gov().equals(_mainPredicate)) {
 						//okay found it
@@ -680,7 +684,7 @@ public class AnalyzedSentence {
 		}else {
 			//passive sentence
 			List<TypedDependency> _nsubjpass = SearchUtils.findDependency("nsubjpass",dependencies);
-			excludeRelativeClauses(sentence,_nsubjpass);			
+//			excludeRelativeClauses(sentence,_nsubjpass);			
 			if(_nsubjpass.size() > 1) {
 				System.out.println("Sentence has more than one passive predicate:");
 				if(Constants.DEBUG_EXTRACTION) printToConsole(_nsubjpass);
@@ -706,7 +710,7 @@ public class AnalyzedSentence {
 				}
 			}	
 		}else {
-			Tree _vpHead = SearchUtils.getFullPhraseTree("VP",_mainPredicate);	
+			Tree _vpHead = SearchUtils.findParentParent(f_root,_mainPredicate.value());//getFullPhraseTree("VP",_mainPredicate);	
 			Action _a = ElementsBuilder.createAction(f_sentence, f_fullSentence, _mainPredicate, dependencies,active);
 			checkForSubSentences(_vpHead,dependencies,_a,false);
 			_result.add(_a);
@@ -778,7 +782,7 @@ public class AnalyzedSentence {
 		if(!_active) {
 			//passive sentence -  the beauty of an nsubjpass relation			
 			List<TypedDependency> _nsubjpass = SearchUtils.findDependency("nsubjpass", dependencies);
-			excludeRelativeClauses(sentence,_nsubjpass);		
+//			excludeRelativeClauses(sentence,_nsubjpass);		
 			if(_nsubjpass.size() == 0) {
 				//use dobj if available instead
 				determineObjectFromDOBJ(verb, dependencies, _result);	
@@ -850,8 +854,9 @@ public class AnalyzedSentence {
 					System.out.println("Sentence with more than one copluar object!?!?");
 					if(Constants.DEBUG_EXTRACTION) printToConsole(_cop);
 				}else {
-					TreeGraphNode _object = _cop.get(0).gov();
-					if(_object.parent().parent().value().equals("NP")) { //only if it is directly part of a noun phrase
+					IndexedWord _object = _cop.get(0).gov();
+					Tree parent = SearchUtils.findParentParent(f_root, _object.value());
+					if(parent.value().equals("NP")) { //only if it is directly part of a noun phrase
 						ExtractedObject _obj = ElementsBuilder.createObject(f_sentence, f_fullSentence, _object,dependencies);
 						_result.add(_obj);
 						checkNPForSubsentence(_object,dependencies,_obj);
@@ -864,8 +869,9 @@ public class AnalyzedSentence {
 				if(Constants.DEBUG_EXTRACTION) printToConsole(_myPrep);
 			}else {
 				//this is our relation
-				TreeGraphNode _object = _myPrep.get(0).dep();
-				if(_object.parent().parent().value().equals("NP")) { //only if it is directly part of a noun phrase
+				IndexedWord _object = _myPrep.get(0).dep();
+				Tree parent = SearchUtils.findParentParent(f_root, _object.value());
+				if(parent.value().equals("NP")) { //only if it is directly part of a noun phrase
 					ExtractedObject _obj = ElementsBuilder.createObject(f_sentence, f_fullSentence, _object,dependencies);
 					_result.add(_obj);
 					checkNPForSubsentence(_object,dependencies,_obj);	
@@ -903,7 +909,7 @@ public class AnalyzedSentence {
 //			System.out.println("Sentence with more than one direct object!?!?");
 //			if(Constants.DEBUG_EXTRACTION) printToConsole(_myDobj);
 		}else {
-			TreeGraphNode _object = _myDobj.get(0).dep();
+			IndexedWord _object = _myDobj.get(0).dep();
 			ExtractedObject _obj = ElementsBuilder.createObject(f_sentence, f_fullSentence, _object,dependencies);
 			checkNPForSubsentence(_object,dependencies,_obj);			
 			_result.add(_obj);
@@ -919,7 +925,7 @@ public class AnalyzedSentence {
 	 */
 	private void checkNPForSubsentence(IndexedWord tgNode,Collection<TypedDependency> dependencies,ExtractedObject obj) {
 		if(!f_ignoreNPSubSentences) {
-			Tree _head = SearchUtils.getFullPhraseTree("NP",tgNode);	
+			Tree _head = SearchUtils.findParentParent(f_root,tgNode.value());//getFullPhraseTree("NP",tgNode);	
 			checkForSubSentences(_head, dependencies, obj,true);
 		}
 	}
@@ -946,12 +952,16 @@ public class AnalyzedSentence {
 			if(_td.reln().getShortName().equals("rcmod")) {
 				continue;
 			}
-			TreeGraphNode _dep = _td.gov();
+			Tree _dep = SearchUtils.findTreeNode(sentence, _td.gov().value());
+			Tree parent = SearchUtils.findParentNode(sentence, _dep.value());
+			Tree parentparent = SearchUtils.findParentParent(sentence, _dep.value());
 			int _sentenceIndex = SearchUtils.getIndex(f_fullSentence, sentence.getLeaves());
-			while(!(_dep = (TreeGraphNode) _dep.parent()).value().equals("ROOT")) {
-				if(sentence.value().equals(_dep.parent().value())) {
+			while(!parent.value().equals("ROOT")) {
+				parent = SearchUtils.findParentNode(sentence, parent.value());
+//				parent = Se
+				if(sentence.value().equals(parentparent.value())) {
 					//did we arrive at the top most sentence node already?
-					int _partIndex = SearchUtils.getIndex(f_fullSentence, _dep.parent().getLeaves());
+					int _partIndex = SearchUtils.getIndex(f_fullSentence, parentparent.getLeaves());
 					if(_sentenceIndex >= _partIndex) {
 						break;
 					}
@@ -974,7 +984,8 @@ public class AnalyzedSentence {
 	 */
 	private void printToConsole(List<TypedDependency> list) {
 		for(TypedDependency td:list) {
-			System.out.println(td+" - "+SearchUtils.getFullNounPhrase(td.dep()));
+			Tree node = SearchUtils.findParentParent(f_root,td.dep().value());
+			System.out.println(td+" - "+SearchUtils.getFullNounPhrase(node));
 		}
 	}
 

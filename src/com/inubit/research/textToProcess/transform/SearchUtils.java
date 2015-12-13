@@ -374,7 +374,7 @@ public class SearchUtils {
 	 * @param dependencies
 	 * @return
 	 */
-	public static List<TypedDependency> filterByGov(TreeGraphNode gov,Collection<TypedDependency> dep) {
+	public static List<TypedDependency> filterByGov(IndexedWord gov,Collection<TypedDependency> dep) {
 		List<TypedDependency> _result = new ArrayList<TypedDependency>(); 
 		for(TypedDependency td:dep) {				
 			if(gov.index() == td.gov().index()) {
@@ -396,8 +396,9 @@ public class SearchUtils {
 			} else {
 				
 			}
-			System.out.println("Iter "+t.nodeNumber(tree)+" "+t.value());
+//			System.out.println("Iter "+t.nodeNumber(tree)+" "+t.value());
 		}
+		System.out.println("findTreeNode "+result.value());
 		return result;
 	}
 	
@@ -411,8 +412,9 @@ public class SearchUtils {
 				result = temp; //if true the previous node is his parent
 			} 
 			temp = t;
-			System.out.println("findParent "+t.nodeNumber(tree)+" "+t.value());
+//			System.out.println("findParent "+t.nodeNumber(tree)+" "+t.value());
 		}
+		System.out.println("findParent "+result.value());
 		return result;
 	}
 	
@@ -431,8 +433,9 @@ public class SearchUtils {
 			}
 			temp2 = temp;
 			temp = t;
-			System.out.println("findParentParent "+t.nodeNumber(tree)+" "+t.value());
+//			System.out.println("findParentParent "+t.nodeNumber(tree)+" "+t.value());
 		}
+		System.out.println("findParentParent"+result.value());
 		return result;
 	}
 	
