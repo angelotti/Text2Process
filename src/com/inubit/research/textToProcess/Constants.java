@@ -28,8 +28,8 @@ public class Constants {
     /* switches for debug output*/
 	public static final boolean DEBUG_FINAL_ACTIONS_RESULT = false;
 	public static final boolean DEBUG_MARKING = false;
-	public static final boolean DEBUG_REFERENCE_RESOLUTION = true;
-	public static final boolean DEBUG_EXTRACTION = true;
+	public static final boolean DEBUG_REFERENCE_RESOLUTION = false;
+	public static final boolean DEBUG_EXTRACTION = false;
 	public static final boolean DEBUG_EXTRACTION_FINAL = false;
 	public static final boolean DEBUG_FRAME_ASSIGNMENT = false;
 	

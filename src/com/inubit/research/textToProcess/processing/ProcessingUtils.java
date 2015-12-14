@@ -151,8 +151,10 @@ public class ProcessingUtils {
 	 * @return
 	 */
 	public static Tree removeChild(Tree copy, int i) {
+		System.out.println("removeChild "+copy.value()+" "+i);
 		Tree[] kids = copy.children();
 		Tree kid = kids[i];
+		System.out.println("kid "+kid.value()+" size"+kids.length);
 		Tree[] newKids;
 		if (copy instanceof TreeGraphNode) {
 			newKids = new TreeGraphNode[kids.length - 1];
@@ -176,6 +178,7 @@ public class ProcessingUtils {
 			}
 		}
 		copy.setChildren(newKids);
+		System.out.println("kid "+kid.value());
 		return kid;
 	}
 	

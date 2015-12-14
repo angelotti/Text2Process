@@ -223,8 +223,12 @@ public class AnalyzedSentence {
 	 */
 	private boolean removeChildInCopy(Tree original, Tree copy, Tree remove) {
 		int removeIndex = remove.nodeNumber(original);
-		if (removeIndex != -1) {
-			ProcessingUtils.removeChild(copy,removeIndex);
+		System.out.println("removeChildInCopy\noriginal"+original.toString()+"\n"
+				+ ""+removeIndex+""
+				+ "\noriginal.objectIndexOf(remove); "+remove.objectIndexOf(remove)+"\n"
+				+ ""+remove.toString());
+		if (original.objectIndexOf(remove) != -1) {
+			ProcessingUtils.removeChild(copy,original.objectIndexOf(remove));
 			return true;
 		}
 		for(int i=0;i<copy.children().length;i++) {
