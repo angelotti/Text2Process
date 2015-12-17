@@ -276,12 +276,12 @@ public class SearchUtils {
 		return PrintUtils.toString(_subject.getLeaves());
 	}
 
-	public static Tree getFullPhraseTree(String type, Tree node) {		
+	public static Tree getFullPhraseTree(String type, Tree node, Tree sentence) {		
 		Tree _subject = node;
 		//need to find the node in the sentence tree.                            
 		boolean going_up = true;
-		while((going_up) || _subject.parent().label().value().equals(type)) {
-			_subject = (TreeGraphNode)_subject.parent();
+		while((going_up) || _subject.parent(sentence).label().value().equals(type)) {
+			_subject = _subject.parent(sentence);
 			if(_subject == null) {
 				return null;
 			}
@@ -384,7 +384,9 @@ public class SearchUtils {
 		return _result;
 	}
 	
-	
+	/*
+	 * finds a tree node. to be used only to search only leaf nodes.
+	 */
 	public static Tree findTreeNode (Tree tree, String value) {
 		Tree result,t ;
 		result = null;
@@ -402,19 +404,26 @@ public class SearchUtils {
 		return result;
 	}
 	
+	/*
+	 * finds the parent node of a leaf node only.
+	 *  
+	 */
 	public static Tree findParentNode(Tree tree, String value) {
 		Tree result,t, temp;
 		result = temp = null;
 		Iterator it = tree.iterator();
+		
 		while(it.hasNext()){
 			t = (Tree) it.next();
 			if(t.value().equals(value) && t.isLeaf()){
 				result = temp; //if true the previous node is his parent
-			} 
+//				
+			}
 			temp = t;
 //			System.out.println("findParent "+t.nodeNumber(tree)+" "+t.value());
 		}
-		System.out.println("findParent "+result.value());
+		System.out.println("findParent of "+" "+value+"\n"+tree.toString());
+		System.out.println("|---------result "+result.value());
 		return result;
 	}
 	
