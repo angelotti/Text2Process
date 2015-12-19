@@ -60,8 +60,8 @@ public class AnalyzedSentence {
 	 * @param sentenceNumber
 	 */
 	public AnalyzedSentence(T2PSentence sentence, int sentenceNumber) {
-		Exception aux = new Exception("---------------AnalyzedSentence\n"); // not for throwing!
-		aux.printStackTrace(); // if you want it in stdout
+//		Exception aux = new Exception("---------------AnalyzedSentence\n"); // not for throwing!
+//		aux.printStackTrace(); // if you want it in stdout
 		f_sentence = sentence;
 		setSentenceNumber(sentenceNumber);
 		f_sentenceTags.add("S");
@@ -163,10 +163,10 @@ public class AnalyzedSentence {
 
 
 	private void analyzseSentence(Tree _mainSentence,Collection<TypedDependency> dependencies ) {	
-		Exception aux = new Exception("---------------analyzseSentence\n"); // not for throwing!
-		aux.printStackTrace(); // if you want it in stdout
+//		Exception aux = new Exception("---------------analyzseSentence\n"); // not for throwing!
+//		aux.printStackTrace(); // if you want it in stdout
 		
-		_mainSentence.pennPrint();
+//		_mainSentence.pennPrint();
 		
 		//checking if the sentence contains several sub-sentences
 		int _sCount = determineSubSentenceCount(_mainSentence);
@@ -223,10 +223,6 @@ public class AnalyzedSentence {
 	 */
 	private boolean removeChildInCopy(Tree original, Tree copy, Tree remove) {
 		int removeIndex = remove.nodeNumber(original);
-		System.out.println("removeChildInCopy\noriginal"+original.toString()+"\n"
-				+ ""+removeIndex+""
-				+ "\noriginal.objectIndexOf(remove); "+remove.objectIndexOf(remove)+"\n"
-				+ ""+remove.toString());
 		if (original.objectIndexOf(remove) != -1) {
 			ProcessingUtils.removeChild(copy,original.objectIndexOf(remove));
 			return true;
@@ -246,8 +242,8 @@ public class AnalyzedSentence {
 	 * @return
 	 */
 	private List<Tree> findSubSentences(Tree sentence) {
-		Exception aux = new Exception("---------------findSubSentences\n"); // not for throwing!
-		aux.printStackTrace(); // if you want it in stdout
+//		Exception aux = new Exception("---------------findSubSentences\n"); // not for throwing!
+//		aux.printStackTrace(); // if you want it in stdout
 		List<Tree> _result = SearchUtils.findChildren(f_sentenceTags, sentence);
 		for(Tree t:sentence.children()) {
 			if(t.value().equals("PP") || t.value().equals("ADVP")) {
@@ -960,7 +956,7 @@ public class AnalyzedSentence {
 			if(_td.reln().getShortName().equals("rcmod")) {
 				continue;
 			}
-			System.out.println("depName: "+_td.reln().getShortName().equals("rcmod"));
+//			System.out.println("depName: "+_td.reln().getShortName().equals("rcmod"));
 			Tree _dep = SearchUtils.findTreeNode(sentence, _td.gov().value());
 			Tree parent = _dep.parent(sentence);
 //			Tree parentparent = SearchUtils.findParentParent(sentence, _dep.value());

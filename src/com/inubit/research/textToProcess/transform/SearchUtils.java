@@ -400,7 +400,7 @@ public class SearchUtils {
 			}
 //			System.out.println("Iter "+t.nodeNumber(tree)+" "+t.value());
 		}
-		System.out.println("findTreeNode "+result.value());
+//		System.out.println("findTreeNode "+result.value());
 		return result;
 	}
 	
@@ -422,8 +422,8 @@ public class SearchUtils {
 			temp = t;
 //			System.out.println("findParent "+t.nodeNumber(tree)+" "+t.value());
 		}
-		System.out.println("findParent of "+" "+value+"\n"+tree.toString());
-		System.out.println("|---------result "+result.value());
+//		System.out.println("findParent of "+" "+value+"\n"+tree.toString());
+//		System.out.println("|---------result "+result.value());
 		return result;
 	}
 	
@@ -444,7 +444,7 @@ public class SearchUtils {
 			temp = t;
 //			System.out.println("findParentParent "+t.nodeNumber(tree)+" "+t.value());
 		}
-		System.out.println("findParentParent"+result.value());
+//		System.out.println("findParentParent"+result.value());
 		return result;
 	}
 	
