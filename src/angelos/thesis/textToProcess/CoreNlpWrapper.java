@@ -53,11 +53,13 @@ public class CoreNlpWrapper {
 		List<CoreMap> sentences = annot.get(CoreAnnotations.SentencesAnnotation.class);
 		if(listener != null) listener.setNumberOfSentences(sentences.size());
 		int _sentenceNumber = 1;
+		if(listener != null) listener.sentenceParsed(_sentenceNumber);
 		System.out.println(sentences.size());
 		if (sentences != null && ! sentences.isEmpty()) {
 			if(sentences.get(0).get(CoreAnnotations.TokensAnnotation.class).get(0).value().startsWith("#")){
 //				System.out.println("Starts with a comment");
 				sentences.remove(0);
+				if(listener != null) listener.setNumberOfSentences(sentences.size());
 			}
 			for(CoreMap s : sentences){
 				T2PSentence _s = new T2PSentence(s.get(CoreAnnotations.TextAnnotation.class), s.get(CoreAnnotations.TokensAnnotation.class)); //plain text of the sentence
@@ -75,6 +77,7 @@ public class CoreNlpWrapper {
 				//TODO ner tags		
 				System.out.println(_s.toString());
 				_result.addSentence(_s);
+				if(listener != null) listener.sentenceParsed(_sentenceNumber++);
 			}
 		}
 		return _result;
