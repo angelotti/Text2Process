@@ -165,7 +165,7 @@ public class T2PSentence {
 	
 	
 	
-	//---------- a static id creation
+//	---------- a static id creation
 	private static int f_lastID = 0;
 	
 	private static int createID(){

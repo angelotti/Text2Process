@@ -380,7 +380,8 @@ public class ElementsBuilder {
 		//extracting further information and specifiers
 		Tree originTree = origin.getTree();
 		Tree parentNode = SearchUtils.findTreeNode(originTree, node.value());
-		Tree _tree = SearchUtils.findParentParent(originTree, node.value());	
+		Tree _tree = SearchUtils.findParentParent(originTree, node.value());
+		System.out.println("determineNounSpecifiers "+_tree.pennString());
 		extractSBARSpecifier(origin, fullSentence, element, _tree,node);		
 		extractPPSpecifier(origin, fullSentence, element, node,dependencies);	
 		//node.parent().value()

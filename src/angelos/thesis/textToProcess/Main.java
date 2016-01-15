@@ -19,6 +19,7 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.trees.Tree;
@@ -79,6 +80,7 @@ public class Main {
 				System.out.println("------------++++++++++++++");
 //				System.out.println(s.toShorterString());
 				Tree tree = s.get(TreeCoreAnnotations.TreeAnnotation.class);
+				SemanticGraph dependencies = s.get(CollapsedCCProcessedDependenciesAnnotation.class);
 //				Tree root = tree.parent(tree);
 				/*
 				 * value() and nodeString() outputs the same string

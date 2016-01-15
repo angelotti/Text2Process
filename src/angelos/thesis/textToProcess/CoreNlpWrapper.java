@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 import java.nio.charset.Charset;
@@ -16,6 +17,8 @@ import com.inubit.research.textToProcess.processing.ITextParsingStatusListener;
 import com.inubit.research.textToProcess.text.T2PSentence;
 import com.inubit.research.textToProcess.text.Text;
 
+import edu.stanford.nlp.dcoref.CorefChain;
+import edu.stanford.nlp.dcoref.CorefCoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
@@ -68,7 +71,8 @@ public class CoreNlpWrapper {
 				_s.setTree(t);
 
 				// set the grammatical structure. later we use typedDepeCollapsed -> basicDependencies
-				f_tlp = new PennTreebankLanguagePack(); //new ChineseTreebankLanguagePack();
+				f_tlp = new PennTreebankLanguagePack(); 
+				f_tlp.setGenerateOriginalDependencies(true);
 				f_gsf = f_tlp.grammaticalStructureFactory();
 				GrammaticalStructure _gs = f_gsf.newGrammaticalStructure(t);
 //				_gs.printDependencies(_gs, _gs.typedDependencies(), null, false, false);
@@ -79,17 +83,26 @@ public class CoreNlpWrapper {
 				_result.addSentence(_s);
 				if(listener != null) listener.sentenceParsed(_sentenceNumber++);
 			}
+			
+			Map<Integer, CorefChain> corefChains = annot.get(CorefCoreAnnotations.CorefChainAnnotation.class);
+			if (corefChains != null) {
+				_result.setCorefChains(corefChains);
+			}
 		}
+		
+		Map<Integer, CorefChain> corefChains = annot.get(CorefCoreAnnotations.CorefChainAnnotation.class);
 		return _result;
 	}
-
+	
+	
 	/*
 	 * creates and returns a pipeline
 	 */
 	public StanfordCoreNLP initPipeline() {
 		Properties props = new Properties();
-		props.put("annotators", "tokenize, ssplit, parse, depparse");
+		props.put("annotators", "tokenize, ssplit, parse,lemma,ner,dcoref");
 		props.put("parse.model", "edu/stanford/nlp/models/lexparser/englishFactored.ser.gz");
+//		props.put("depparse.model", "edu/stanford/nlp/models/lexparser/englishFactored.ser.gz");
 		StanfordCoreNLP pipe = new StanfordCoreNLP(props);
 		return pipe;
 

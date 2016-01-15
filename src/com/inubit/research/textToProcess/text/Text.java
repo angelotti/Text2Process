@@ -3,16 +3,30 @@ package com.inubit.research.textToProcess.text;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.inubit.research.textToProcess.transform.ListUtils;
+
+import edu.stanford.nlp.dcoref.CorefChain;
 
 public class Text {
 
 	private ArrayList<T2PSentence> f_sentences = new ArrayList<T2PSentence>();
+	private Map<Integer, CorefChain> corefChains;
 	
+
 	public Text() {
 		
 	}
+	
+	public Map<Integer, CorefChain> getCorefChains() {
+		return corefChains;
+	}
+
+	public void setCorefChains(Map<Integer, CorefChain> corefChains) {
+		this.corefChains = corefChains;
+	}
+
 	
 	public void addSentence(T2PSentence _s){
 		f_sentences.add(_s);

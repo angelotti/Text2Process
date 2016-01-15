@@ -359,6 +359,9 @@ public class AnalyzedSentence {
 		for(Actor a:_actors) {
 			f_world.addActor(a);
 		}
+		if(_allObjects.size()>0){
+			System.out.println("allObjects: "+_allObjects.toString());
+		}
 		for(SpecifiedElement se:_allObjects) {
 			if(se instanceof Actor) {
 				f_world.addActor((Actor) se);
@@ -928,7 +931,7 @@ public class AnalyzedSentence {
 		if(!f_ignoreNPSubSentences) {
 			Tree node = SearchUtils.findTreeNode(f_root, tgNode.value());
 			Tree _head = SearchUtils.getFullPhraseTree("NP",node,f_root);//findParentParent(f_root,tgNode.value());//
-			System.out.println("checkNPForSubsentence "+_head.toString());
+//			System.out.println("checkNPForSubsentence "+_head.toString());
 			checkForSubSentences(_head, dependencies, obj,true);
 		}
 	}
@@ -950,7 +953,7 @@ public class AnalyzedSentence {
 	 * @param list
 	 */
 	private void excludeRelativeClauses(Tree sentence, List<TypedDependency> list) {
-		System.out.println("excludeRelativeClauses "+sentence.toString());
+//		System.out.println("excludeRelativeClauses "+sentence.toString());
 		for(int i=0;i<list.size();i++) {
 			TypedDependency _td = list.get(i);
 			if(_td.reln().getShortName().equals("rcmod")) {
@@ -962,7 +965,7 @@ public class AnalyzedSentence {
 //			Tree parentparent = SearchUtils.findParentParent(sentence, _dep.value());
 			int _sentenceIndex = SearchUtils.getIndex(f_fullSentence, sentence.getLeaves());
 			while(!(parent.value().equals("ROOT"))) {
-				System.out.println("insideWhile: "+parent.value());
+//				System.out.println("insideWhile: "+parent.value());
 				if(sentence.value().equals(parent.value())) { //san na leme root == root
 					//did we arrive at the top most sentence node already?
 					int _partIndex = SearchUtils.getIndex(f_fullSentence, parent.getLeaves());
