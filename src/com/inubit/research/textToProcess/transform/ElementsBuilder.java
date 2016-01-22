@@ -313,6 +313,7 @@ public class ElementsBuilder {
 	/**
 	 * creates a new specified elements which can either be a Resource
 	 * or an Actor
+	 * Algorithm 8
 	 * @param origin
 	 * @param world
 	 * @param fullSentence
@@ -337,8 +338,7 @@ public class ElementsBuilder {
 		return _r;				
 	}
 //changed TreeGraphNode node
-	private static String getFullNoun(IndexedWord node,
-			Collection<TypedDependency> dependencies) {
+	private static String getFullNoun(IndexedWord node, Collection<TypedDependency> dependencies) {
 		List<TypedDependency> _toCheck = SearchUtils.findDependency(ListUtils.getList("nn","dep"),dependencies);
 		//extracting full compound name
 		StringBuilder _builder = new StringBuilder();

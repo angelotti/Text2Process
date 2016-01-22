@@ -103,8 +103,6 @@ private CoreNlpWrapper f_stanford = new CoreNlpWrapper();//new T2PStanfordWrappe
 		f_text = f_stanford.createText(file,tpsl);
 		f_analyzer.clear();
 		analyzeText(true);
-		Exception aux = new Exception("---------------parseText\n"); // not for throwing!
-		aux.printStackTrace(); // if you want it in stdout
 	}
 	
 	/**

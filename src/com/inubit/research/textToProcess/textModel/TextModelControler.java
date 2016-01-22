@@ -40,7 +40,8 @@ import com.inubit.research.textToProcess.worldModel.Specifier.SpecifierType;
 
 /**
  * @author ff
- *
+ * by aa: connects the world model and classes used to process the text 
+ * with the gui and controls the final model
  */
 public class TextModelControler extends ProcessUtils implements ProcessEditorListener, ProcessModelListener  {
 

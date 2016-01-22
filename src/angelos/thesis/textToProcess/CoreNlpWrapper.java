@@ -101,7 +101,7 @@ public class CoreNlpWrapper {
 	public StanfordCoreNLP initPipeline() {
 		Properties props = new Properties();
 		props.put("annotators", "tokenize, ssplit, parse,lemma,ner,dcoref");
-		props.put("parse.model", "edu/stanford/nlp/models/lexparser/englishFactored.ser.gz");
+//		props.put("parse.model", "edu/stanford/nlp/models/lexparser/englishFactored.ser.gz");
 //		props.put("depparse.model", "edu/stanford/nlp/models/lexparser/englishFactored.ser.gz");
 		StanfordCoreNLP pipe = new StanfordCoreNLP(props);
 		return pipe;

@@ -82,16 +82,6 @@ public class T2PStanfordWrapper {
 		try{
 			Text _result = new Text();
 			List<List<? extends HasWord>> _sentences = f_dpp.getSentencesFromText(f.getAbsolutePath());
-//			System.out.println("----------getSentencesFromText "+_sentences.toString());
-//			BufferedReader _r = new BufferedReader(new InputStreamReader(new FileInputStream(f), "Unicode"));
-//			ArrayList<List<? extends HasWord>> _sentences = new ArrayList<List<? extends HasWord>>();
-//			String s;
-//			while((s = _r.readLine()) != null) {
-//				ArrayList<Word> sent = new ArrayList<Word>();
-//				sent.add(new Word(s));
-//				_sentences.add(sent);
-//			}
-			//AA this is because for some reason that listener is initialized with the number of sentences
 			if(listener != null) listener.setNumberOfSentences(_sentences.size());
 			int _sentenceNumber = 1;
 			int sentenceOffset = 0;
@@ -102,7 +92,6 @@ public class T2PStanfordWrapper {
 					sentenceOffset += ((Word)_sentence.get(_sentence.size()-1)).endPosition();
 					continue;
 				}
-//				System.out.println("AAA sentence "+_sentence);
 				ArrayList<Word> _list = new ArrayList<Word>();
 				for(HasWord w:_sentence){
 					if(w instanceof Word){
@@ -113,7 +102,6 @@ public class T2PStanfordWrapper {
 					}
 				}
 				T2PSentence _s = createSentence(_list);
-//				System.out.println("SENTENCE  "+_s);
 				_s.setCommentOffset(sentenceOffset);
 				_result.addSentence(_s);	
 				if(listener != null) listener.sentenceParsed(_sentenceNumber++);				
