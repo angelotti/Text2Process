@@ -859,8 +859,9 @@ public class AnalyzedSentence {
 					if(Constants.DEBUG_EXTRACTION) printToConsole(_cop);
 				}else {
 					IndexedWord _object = _cop.get(0).gov();
-					Tree parent = SearchUtils.findParentParent(f_root, _object.value());
-					if(parent.value().equals("NP")) { //only if it is directly part of a noun phrase
+					Tree objectTree = SearchUtils.findTreeNode(f_root, _object.value());
+					System.out.println("determineObjectFromDOBJ: "+objectTree.parent(f_root).parent(f_root).pennString());
+					if(objectTree.parent(f_root).parent(f_root).value().equals("NP")) { //only if it is directly part of a noun phrase
 						ExtractedObject _obj = ElementsBuilder.createObject(f_sentence, f_fullSentence, _object,dependencies);
 						_result.add(_obj);
 						checkNPForSubsentence(_object,dependencies,_obj);
@@ -874,8 +875,9 @@ public class AnalyzedSentence {
 			}else {
 				//this is our relation
 				IndexedWord _object = _myPrep.get(0).dep();
-				Tree parent = SearchUtils.findParentParent(f_root, _object.value());
-				if(parent.value().equals("NP")) { //only if it is directly part of a noun phrase
+				Tree objectTree = SearchUtils.findTreeNode(f_root, _object.value());
+//				Tree parent = SearchUtils.findParentParent(f_root, _object.value());
+				if(objectTree.parent(f_root).parent(f_root).value().equals("NP")) { //only if it is directly part of a noun phrase
 					ExtractedObject _obj = ElementsBuilder.createObject(f_sentence, f_fullSentence, _object,dependencies);
 					_result.add(_obj);
 					checkNPForSubsentence(_object,dependencies,_obj);	
@@ -993,8 +995,9 @@ public class AnalyzedSentence {
 	 */
 	private void printToConsole(List<TypedDependency> list) {
 		for(TypedDependency td:list) {
-			Tree node = SearchUtils.findParentParent(f_root,td.dep().value());
-			System.out.println(td+" - "+SearchUtils.getFullNounPhrase(node));
+			Tree node = SearchUtils.findTreeNode(f_root, td.dep().value());
+			Tree p = node.parent(f_root).parent(f_root);
+			System.out.println(td+" - "+SearchUtils.getFullNounPhrase(node,f_root));
 		}
 	}
 

@@ -266,13 +266,13 @@ public class SearchUtils {
 		return false;
 	}
 
-	public static String getFullNounPhrase(Tree node) {
-		return getFullPhrase("NP", node);
+	public static String getFullNounPhrase(Tree node, Tree sentence) {
+		return getFullPhrase("NP", node, sentence);
 	}
 	
-	public static String getFullPhrase(String type, Tree node) {
-//		Tree _subject = getFullPhraseTree(type, node);
-		Tree _subject = node;
+	public static String getFullPhrase(String type, Tree node, Tree sentence) {
+		Tree _subject = getFullPhraseTree(type, node, sentence);
+//		_subject = node;
 		return PrintUtils.toString(_subject.getLeaves());
 	}
 
@@ -422,8 +422,8 @@ public class SearchUtils {
 			temp = t;
 //			System.out.println("findParent "+t.nodeNumber(tree)+" "+t.value());
 		}
-//		System.out.println("findParent of "+" "+value+"\n"+tree.toString());
-//		System.out.println("|---------result "+result.value());
+		System.out.println("findParent of "+" "+value+"\n"+tree.toString());
+		System.out.println("|---------result "+result.value());
 		return result;
 	}
 	

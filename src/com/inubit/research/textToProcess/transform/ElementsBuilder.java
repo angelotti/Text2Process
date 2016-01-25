@@ -23,6 +23,7 @@ import com.inubit.research.textToProcess.worldModel.Resource;
 import com.inubit.research.textToProcess.worldModel.SpecifiedElement;
 import com.inubit.research.textToProcess.worldModel.Specifier;
 import com.inubit.research.textToProcess.worldModel.Specifier.SpecifierType;
+import com.itextpdf.text.log.SysoCounter;
 
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.trees.Tree;
@@ -39,7 +40,7 @@ public class ElementsBuilder {
 		Actor _a = null;					
 		String _fullNoun = getFullNoun(node, dependencies);
 		Tree root = origin.getTree();
-		if(!WordNetWrapper.canBePersonOrSystem(_fullNoun, node.value().toLowerCase())) {		
+		if(!WordNetWrapper.canBePersonOrSystem(_fullNoun, node.value().toLowerCase())) {
 			//try to extract the real actor here? node.parent().value().equals("CD")
 			if(SearchUtils.findParentNode(root, node.value()).equals("CD") || WordNetWrapper.canBeGroupAction(node.value())) { //one of the physicians
 				List<TypedDependency> _preps = SearchUtils.findDependency("prep", dependencies);
@@ -115,6 +116,7 @@ public class ElementsBuilder {
 			if(td.gov().equals(node)) {
 				if(td.reln().getShortName().equals("dep")) {
 					//only consider verbs and forwards dependencies, td.dep().parent().value()
+//					Tree tdTree = SearchUtils.find
 					if(!SearchUtils.findParentNode(root, td.dep().value()).value().startsWith("V") || (td.dep().index()<td.gov().index())) {						
 						continue;
 					}
@@ -128,7 +130,8 @@ public class ElementsBuilder {
 			}
 		}
 		//extracting further information and specifiers
-		Tree _vpHead = SearchUtils.findParentParent(root, node.value()); //("VP",node);	
+		Tree _vpHead = SearchUtils.findTreeNode(root, node.value());
+		_vpHead = SearchUtils.getFullPhraseTree("VP", _vpHead, root);//("VP",node);	
 		extractSBARSpecifier(origin, fullSentence, _result, _vpHead,node);
 		extractPPSpecifier(origin, fullSentence, _result, node,dependencies);
 		extractRCMODSpecifier(origin, _result, node,dependencies);
@@ -379,9 +382,10 @@ public class ElementsBuilder {
 		
 		//extracting further information and specifiers
 		Tree originTree = origin.getTree();
-		Tree parentNode = SearchUtils.findTreeNode(originTree, node.value());
-		Tree _tree = SearchUtils.findParentParent(originTree, node.value());
-		System.out.println("determineNounSpecifiers "+_tree.pennString());
+		Tree treeNode = SearchUtils.findTreeNode(originTree, node.value());
+		Tree parentNode = treeNode.parent(originTree);
+		Tree _tree = parentNode.parent(originTree);
+//		System.out.println("determineNounSpecifiers "+treeNode.value()+"  "+_tree.value());
 		extractSBARSpecifier(origin, fullSentence, element, _tree,node);		
 		extractPPSpecifier(origin, fullSentence, element, node,dependencies);	
 		//node.parent().value()
@@ -446,8 +450,9 @@ public class ElementsBuilder {
 		Tree root = origin.getTree();
 		if(_toCheck.size() > 0) {
 			for(TypedDependency td:_toCheck) {
-				if(td.gov().equals(node)) {					
-					String _phr = SearchUtils.getFullPhrase("VP", SearchUtils.findParentParent(root, td.dep().value()));
+				if(td.gov().equals(node)) {		
+					Tree phrTree = SearchUtils.findTreeNode(root, td.dep().value());
+					String _phr = SearchUtils.getFullPhrase("VP", phrTree.parent(root).parent(root), root);
 					//found it					
 					Specifier _sp = new Specifier(origin,td.dep().index(),_phr);
 					_sp.setSpecifierType(SpecifierType.PARTMOD);
@@ -483,8 +488,9 @@ public class ElementsBuilder {
 			}
 			if((td.gov().equals(node) || td.gov().value().equals(_cop)) && !partOfrcMod(origin, _rcMod, td)) {				
 				//found something
-//				Tree _phraseTree = SearchUtils.getFullPhraseTree("PP", treeNode); and then search for the wanted subtree
-				Tree _phraseTree = SearchUtils.findParentParent(root, td.dep().value());
+				treeNode = SearchUtils.findTreeNode(root, td.dep().value());
+				Tree _phraseTree = SearchUtils.getFullPhraseTree("PP", treeNode, root); //and then search for the wanted subtree
+//				_phraseTree = _phraseTree.parent(root).parent(root);
 				if(!_phraseTree.value().equals("PRN")) {
 					_phraseTree = deleteBranches(ListUtils.getList("S","SBAR"),_phraseTree);
 					String _phrase = PrintUtils.toString(_phraseTree);
@@ -498,8 +504,8 @@ public class ElementsBuilder {
 						Specifier _sp = new Specifier(origin,td.dep().index(),_phrase);
 						_sp.setSpecifierType(SpecifierType.PP);
 						//td.dep().parent().parent().value().startsWith("NP") -> wants to find the parent parent
-						;
-						if(SearchUtils.findParentParent(root, td.dep().value()).value().equals("NP")) {
+						Tree tdTree = SearchUtils.findTreeNode(root, td.dep().value());
+						if(tdTree.parent(root).parent(root).value().equals("NP")) { //SearchUtils.findParentParent(root, td.dep().value())
 							ExtractedObject _object = createObject(origin, fullSentence, td.dep(), dependencies);
 							_sp.setObject(_object);	
 							//TODO add conjunct elements							
@@ -525,7 +531,8 @@ public class ElementsBuilder {
 			}
 			if(td.dep().equals(node) || td.dep().value().equals(_cop)) {				
 				//found something
-				Tree _phraseTree = SearchUtils.findParentParent(root, td.gov().value());//getFullPhraseTree("PP", td.gov());
+				Tree tdNode = SearchUtils.findTreeNode(root, td.gov().value());
+				Tree _phraseTree = SearchUtils.getFullPhraseTree("PP", tdNode, root);
 				if(_phraseTree != null) {//it was not a PP, but e.g. an SBAR
 					_phraseTree = deleteBranches(ListUtils.getList("S","SBAR"),_phraseTree);
 					String _phrase = PrintUtils.toString(_phraseTree);
@@ -541,7 +548,8 @@ public class ElementsBuilder {
 		Tree root = origin.getTree();
 		for(TypedDependency rcm:_rcMod) {
 			if(rcm.gov().equals(td.dep())) {
-				Tree _phraseTree = SearchUtils.findParentParent(root, td.dep().value());//getFullPhraseTree("PP", td.dep());
+				Tree _phraseTree = SearchUtils.findTreeNode(root, td.dep().value());
+				_phraseTree = SearchUtils.getFullPhraseTree("PP", _phraseTree, root);
 				_phraseTree = deleteBranches(ListUtils.getList("S","SBAR"),_phraseTree);
 				String _phrase = PrintUtils.toString(_phraseTree).toLowerCase();
 				if(Constants.f_conditionIndicators.contains(_phrase)) {

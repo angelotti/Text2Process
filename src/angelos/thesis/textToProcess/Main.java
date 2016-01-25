@@ -2,6 +2,7 @@ package angelos.thesis.textToProcess;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +14,10 @@ import com.inubit.research.textToProcess.transform.SearchUtils;
 
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations;
+import edu.stanford.nlp.ie.util.RelationTriple;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.naturalli.NaturalLogicAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
@@ -40,11 +43,15 @@ public class Main {
 
 		//		 In comments we show how you can build a particular pipeline
 				Properties props = new Properties();
-				props.put("annotators", "tokenize, ssplit, parse, depparse");
+//				props.put("annotators", "tokenize, ssplit, parse, depparse");
+				props.setProperty("annotators", "tokenize,ssplit,parse,pos,lemma,depparse,natlog,openie");
+//				props.put("annotators", "tokenize, ssplit, parse,lemma,ner,dcoref");
 //				props.put("annotators", "tokenize, ssplit, pos, lemma, ner, depparse");
 //				props.put("ner.model", "edu/stanford/nlp/models/ner/english.all.3class.distsim.crf.ser.gz");
 		//		props.put("ner.applyNumericClassifiers", "false");
 				props.put("parse.model", "edu/stanford/nlp/models/lexparser/englishFactored.ser.gz");
+				props.put("parse.originalDependencies", "true");
+				props.put("dcoref.score","true");
 		StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
 		// Initialize an Annotation with some text to be annotated.
@@ -64,7 +71,7 @@ public class Main {
 		// run all the selected Annotators on this text
 		pipeline.annotate(annot2);
 
-//		pipeline.prettyPrint(annot2, out);
+		pipeline.prettyPrint(annot2, out);
 
 		PrintWriter out2 = new PrintWriter(System.out);
 
@@ -77,6 +84,15 @@ public class Main {
 				sentences.remove(0);
 			}
 			for(CoreMap s : sentences){
+				// Get the OpenIE triples for the sentence
+			      Collection<RelationTriple> triples = s.get(NaturalLogicAnnotations.RelationTriplesAnnotation.class);
+			      // Print the triples
+			      for (RelationTriple triple : triples) {
+			        System.out.println(triple.confidence + "\t" +
+			            triple.subjectLemmaGloss() + "\t" +
+			            triple.relationLemmaGloss() + "\t" +
+			            triple.objectLemmaGloss());
+			      }
 				System.out.println("------------++++++++++++++");
 //				System.out.println(s.toShorterString());
 				Tree tree = s.get(TreeCoreAnnotations.TreeAnnotation.class);
@@ -92,16 +108,16 @@ public class Main {
 				System.out.println("Tree "+tree.toString());			
 				Iterator it1 = tree.iterator();
 				Tree t;
-				while(it1.hasNext()){
-					t = (Tree) it1.next();
-					
-					System.out.println("Iter "+t.nodeNumber(tree)+" "+t.value()+" ");
-					Tree parent = t.parent(tree);
-					if(t.isLeaf()){
-						System.out.println(parent.value()+"| "+parent.parent(tree)+"| "+parent.parent(tree).parent(tree));
-					}
-				}
-				Tree t1 = SearchUtils.findTreeNode(tree, "customer");
+//				while(it1.hasNext()){
+//					t = (Tree) it1.next();
+//					
+//					System.out.println("Iter "+t.nodeNumber(tree)+" "+t.value()+" ");
+//					Tree parent = t.parent(tree);
+//					if(t.isLeaf()){
+//						System.out.println(parent.value()+"| "+parent.parent(tree)+"| "+parent.parent(tree).parent(tree));
+//					}
+//				}
+//				Tree t1 = SearchUtils.findTreeNode(tree, "customer");
 //				Tree t2 = SearchUtils.findParentParent(tree, "checks");
 //				Tree t3 = SearchUtils.findParentNode(tree, "checks");
 //				Tree t4 = SearchUtils.findParentNode(tree, t3.value());
