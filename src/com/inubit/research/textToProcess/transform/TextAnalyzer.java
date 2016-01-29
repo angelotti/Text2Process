@@ -34,6 +34,9 @@ import com.inubit.research.textToProcess.worldModel.Resource;
 import com.inubit.research.textToProcess.worldModel.SpecifiedElement;
 import com.inubit.research.textToProcess.worldModel.Specifier;
 import com.inubit.research.textToProcess.worldModel.WorldModel;
+
+import angelos.thesis.textToProcess.CoreNlpWrapper;
+
 import com.inubit.research.textToProcess.worldModel.Action.ActionLinkType;
 import com.inubit.research.textToProcess.worldModel.DetermineConjResult.DLRStatusCode;
 import com.inubit.research.textToProcess.worldModel.Flow.FlowDirection;
@@ -922,31 +925,30 @@ public class TextAnalyzer {
 	}*/
 
 	private void referenceResolution() {
-		Exception aux = new Exception("---------------reference\n"); // not for throwing!
-		aux.printStackTrace(); // if you want it in stdout
-
 		List<ExtractedObject> _toCheck = new ArrayList<ExtractedObject>(f_world.getActors());
 		_toCheck.addAll(f_world.getResources());
 
 		ExtractedObject tempRef = null;
 		Map<Integer, CorefChain> corefChains = f_text.getCorefChains();
+		CoreNlpWrapper.printCorefGraph(corefChains);
 		for (CorefChain chain : corefChains.values()) {
 			CorefMention rep = chain.getRepresentativeMention();
+			// finding the ExtractedObject that match the representative of this chain
 			for(ExtractedObject ref : _toCheck){
-				if(ref.getWordIndex() == rep.headIndex && rep.mentionSpan.contains(ref.getName())) {
-					System.out.println("-COREF: "+rep.mentionID+" = "+ref.getName());
+				if(ref.getWordIndex() == rep.headIndex && rep.mentionSpan.contains(ref.getName()) 
+												&& ref.getOrigin().getSentenceID() == rep.sentNum) {
 					tempRef = ref;
 					break;
 				}
 			}
+			
 			for (CorefChain.CorefMention mention : chain.getMentionsInTextualOrder()) {
 				if (mention != rep && tempRef != null) {
-					System.out.println("COREF: "+mention.mentionSpan+" -> "+rep.mentionSpan);
 					for(ExtractedObject a : _toCheck){
-						if(a.getWordIndex() == mention.headIndex && mention.mentionSpan.contains(a.getName())) {
+						if(a.getWordIndex() == mention.headIndex && mention.mentionSpan.contains(a.getName()) 
+												&& a.getOrigin().getSentenceID() == mention.sentNum) {
 							a.setReference(tempRef);
 							a.setResolve(true);
-						
 						}
 
 					}
@@ -954,8 +956,12 @@ public class TextAnalyzer {
 			}
 		}
 
-			for(ExtractedObject a:_toCheck) {
-				System.out.println("----- "+a.getWordIndex()+", "+a.getName()+" "+a.getDeterminer()+" "+a.needsResolve()+" "+a.getOrigin());
+//		System.out.println("-REP: headIndex "+rep.headIndex+" sentID "+rep.sentNum+" "+rep.mentionSpan+" = "+ref.getName()+ref.getWordIndex());
+//
+//		System.out.println("----- "+a.getWordIndex()+", "+a.getName()+" "+a.getDeterminer()+" "+a.needsResolve()+" \n"+a.getOrigin());
+
+//			for(ExtractedObject a:_toCheck) {
+//				System.out.println("----- "+a.getWordIndex()+", "+a.getName()+" "+a.getDeterminer()+" "+a.needsResolve()+" "+a.getOrigin());
 				//				if(a.needsResolve()) {			
 				//					if(Constants.DEBUG_REFERENCE_RESOLUTION) System.out.println("resolving:"+a);				
 				//					//check manual resolutions
@@ -987,7 +993,7 @@ public class TextAnalyzer {
 				//				}
 				//
 				//
-			}		
+//			}		
 		}
 
 

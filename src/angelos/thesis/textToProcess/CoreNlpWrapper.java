@@ -3,6 +3,7 @@ package angelos.thesis.textToProcess;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -54,55 +55,55 @@ public class CoreNlpWrapper {
 		pipeline.annotate(annot);
 
 		List<CoreMap> sentences = annot.get(CoreAnnotations.SentencesAnnotation.class);
+		// the next 3 lines are used for the progress bar while processing
 		if(listener != null) listener.setNumberOfSentences(sentences.size());
 		int _sentenceNumber = 1;
 		if(listener != null) listener.sentenceParsed(_sentenceNumber);
 		System.out.println(sentences.size());
 		if (sentences != null && ! sentences.isEmpty()) {
 			if(sentences.get(0).get(CoreAnnotations.TokensAnnotation.class).get(0).value().startsWith("#")){
-//				System.out.println("Starts with a comment");
+				// System.out.println("Starts with a comment");
 				sentences.remove(0);
 				if(listener != null) listener.setNumberOfSentences(sentences.size());
 			}
-			for(CoreMap s : sentences){
-				T2PSentence _s = new T2PSentence(s.get(CoreAnnotations.TextAnnotation.class), s.get(CoreAnnotations.TokensAnnotation.class)); //plain text of the sentence
+			
+			for(int i=0; i<sentences.size(); i++){
+				CoreMap s = sentences.get(i);
+				T2PSentence _s = new T2PSentence(s.get(CoreAnnotations.TextAnnotation.class),
+												 s.get(CoreAnnotations.TokensAnnotation.class), i+1); 
 				Tree t = s.get(TreeCoreAnnotations.TreeAnnotation.class);
-//				t.pennPrint();
 				_s.setTree(t);
 
-				// set the grammatical structure. later we use typedDepeCollapsed -> basicDependencies
+				// set the grammatical structure. later we use typedDepeCollapsed
 				f_tlp = new PennTreebankLanguagePack(); 
 				f_tlp.setGenerateOriginalDependencies(true);
 				f_gsf = f_tlp.grammaticalStructureFactory();
 				GrammaticalStructure _gs = f_gsf.newGrammaticalStructure(t);
-//				_gs.printDependencies(_gs, _gs.typedDependencies(), null, false, false);
 				_s.setGrammaticalStructure(_gs);
 
-				//TODO ner tags		
 				System.out.println(_s.toString());
 				_result.addSentence(_s);
 				if(listener != null) listener.sentenceParsed(_sentenceNumber++);
 			}
-			
+
 			Map<Integer, CorefChain> corefChains = annot.get(CorefCoreAnnotations.CorefChainAnnotation.class);
 			if (corefChains != null) {
 				_result.setCorefChains(corefChains);
 			}
 		}
-		
-		Map<Integer, CorefChain> corefChains = annot.get(CorefCoreAnnotations.CorefChainAnnotation.class);
+
 		return _result;
 	}
-	
-	
+
+
 	/*
 	 * creates and returns a pipeline
 	 */
+
 	public StanfordCoreNLP initPipeline() {
 		Properties props = new Properties();
 		props.put("annotators", "tokenize, ssplit, parse,lemma,ner,dcoref");
-//		props.put("parse.model", "edu/stanford/nlp/models/lexparser/englishFactored.ser.gz");
-//		props.put("depparse.model", "edu/stanford/nlp/models/lexparser/englishFactored.ser.gz");
+		props.put("parse.model", "edu/stanford/nlp/models/lexparser/englishFactored.ser.gz");
 		StanfordCoreNLP pipe = new StanfordCoreNLP(props);
 		return pipe;
 
@@ -123,8 +124,39 @@ public class CoreNlpWrapper {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-//		System.out.println("file read: "+result);
+		//		System.out.println("file read: "+result);
 		return result.toString();
+	}
+
+	public static void printCorefGraph(Map<Integer, CorefChain> corefChains) {
+		PrintWriter pw = new PrintWriter(System.out);
+		if (corefChains != null) {
+			for (CorefChain chain : corefChains.values()) {
+				CorefChain.CorefMention representative = chain.getRepresentativeMention();
+				boolean outputHeading = false;
+				for (CorefChain.CorefMention mention : chain.getMentionsInTextualOrder()) {
+					if (mention == representative)
+						continue; //if the mention refers to itself skip
+					if (!outputHeading) {
+						outputHeading = true;
+						pw.println("Coreference set:");
+					}
+					// all offsets start at 1!
+					pw.printf("\t(%d,%d,[%d,%d]) -> (%d,%d,[%d,%d]), that is: \"%s\" -> \"%s\"%n",
+							mention.sentNum,
+							mention.headIndex,
+							mention.startIndex,
+							mention.endIndex,
+							representative.sentNum,
+							representative.headIndex,
+							representative.startIndex,
+							representative.endIndex,
+							mention.mentionSpan,
+							representative.mentionSpan);
+				}
+			}
+		}
+		pw.flush();
 	}
 
 

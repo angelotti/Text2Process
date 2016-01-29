@@ -422,8 +422,8 @@ public class SearchUtils {
 			temp = t;
 //			System.out.println("findParent "+t.nodeNumber(tree)+" "+t.value());
 		}
-		System.out.println("findParent of "+" "+value+"\n"+tree.toString());
-		System.out.println("|---------result "+result.value());
+//		System.out.println("findParent of "+" "+value+"\n"+tree.toString());
+//		System.out.println("|---------result "+result.value());
 		return result;
 	}
 	

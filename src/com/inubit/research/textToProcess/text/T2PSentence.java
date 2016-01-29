@@ -28,6 +28,7 @@ public class T2PSentence {
 	private Tree f_tree; //syntax Tree
 	private GrammaticalStructure f_gramStruc; //dependencies
 	private int f_offset;
+	private int sID;
 	private String theSentence;
 	private List<CoreLabel> wordTokens;
 	
@@ -36,9 +37,10 @@ public class T2PSentence {
 	/**
 	 * Constructs an empty sentence.
 	 */
-	public T2PSentence(String s, List<CoreLabel> wordTokens) {
+	public T2PSentence(String s, List<CoreLabel> wordTokens, int sID) {
 //		super();
 		theSentence = s;
+		this.sID = sID;
 		this.wordTokens = wordTokens;
 	}
 
@@ -76,6 +78,10 @@ public class T2PSentence {
 	
 	public int getID(){
 		return f_id;
+	}
+	
+	public int getSentenceID(){
+		return sID;
 	}
 	
 //	/**

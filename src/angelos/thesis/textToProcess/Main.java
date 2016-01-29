@@ -84,15 +84,6 @@ public class Main {
 				sentences.remove(0);
 			}
 			for(CoreMap s : sentences){
-				// Get the OpenIE triples for the sentence
-			      Collection<RelationTriple> triples = s.get(NaturalLogicAnnotations.RelationTriplesAnnotation.class);
-			      // Print the triples
-			      for (RelationTriple triple : triples) {
-			        System.out.println(triple.confidence + "\t" +
-			            triple.subjectLemmaGloss() + "\t" +
-			            triple.relationLemmaGloss() + "\t" +
-			            triple.objectLemmaGloss());
-			      }
 				System.out.println("------------++++++++++++++");
 //				System.out.println(s.toShorterString());
 				Tree tree = s.get(TreeCoreAnnotations.TreeAnnotation.class);

@@ -255,7 +255,7 @@ public class AnalyzedSentence {
 				}
 			}			
 		}
-		System.out.println("findSubSent===>reuslt: "+_result);
+//		System.out.println("findSubSent===>reuslt: "+_result);
 		return _result;
 	}
 
@@ -860,7 +860,7 @@ public class AnalyzedSentence {
 				}else {
 					IndexedWord _object = _cop.get(0).gov();
 					Tree objectTree = SearchUtils.findTreeNode(f_root, _object.value());
-					System.out.println("determineObjectFromDOBJ: "+objectTree.parent(f_root).parent(f_root).pennString());
+//					System.out.println("determineObjectFromDOBJ: "+objectTree.parent(f_root).parent(f_root).pennString());
 					if(objectTree.parent(f_root).parent(f_root).value().equals("NP")) { //only if it is directly part of a noun phrase
 						ExtractedObject _obj = ElementsBuilder.createObject(f_sentence, f_fullSentence, _object,dependencies);
 						_result.add(_obj);
