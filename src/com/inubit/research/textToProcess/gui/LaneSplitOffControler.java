@@ -69,6 +69,8 @@ public class LaneSplitOffControler implements ActionListener, WorkbenchEditorLis
 	 * 
 	 */
 	public LaneSplitOffControler(Workbench wb) {
+		Exception aux = new Exception("---------------LaneSplitOffControler.constructor\n"); // not for throwing!
+		aux.printStackTrace(); // if you want it in stdout
 		f_wb = wb;
 		f_wb.addWorkbenchEditorListener(this);
 		for(int i=0;i<f_wb.getNumOfProcessEditors();i++) {
@@ -80,6 +82,8 @@ public class LaneSplitOffControler implements ActionListener, WorkbenchEditorLis
 
 	@Override
 	public void actionPerformed(ActionEvent evt) {
+		Exception aux = new Exception("---------------LaneSplitOffControler.actionPerformed\n"); // not for throwing!
+		aux.printStackTrace(); // if you want it in stdout
 		f_newEdges.clear();
 		f_createMsgEvt = "1".equals(f_config.getProperty(Constants.CONF_LANESO_ALWAYS_CREATE_MSG_EVT));
 		f_createCommLinks = "1".equals(f_config.getProperty(Constants.CONF_LANESO_CREATE_EXTRA_COMM_LINKS));
@@ -125,6 +129,8 @@ public class LaneSplitOffControler implements ActionListener, WorkbenchEditorLis
 	 * @param clusterByName
 	 */
 	private void buildExtraCommLink(BPMNModel model, ProcessNode p, Cluster c) {
+		Exception aux = new Exception("---------------LaneSplitOffControler.buildExtraCommLink\n"); // not for throwing!
+		aux.printStackTrace(); // if you want it in stdout
 		ProcessNode _pred = findPredecessorInCluster(model, c, p);
 		if(_pred == null) return;
 		if(_pred instanceof EndEvent) {

@@ -937,6 +937,7 @@ public class TextAnalyzer {
 			for(ExtractedObject ref : _toCheck){
 				if(ref.getWordIndex() == rep.headIndex && rep.mentionSpan.contains(ref.getName()) 
 												&& ref.getOrigin().getSentenceID() == rep.sentNum) {
+					System.out.println("-REP: headIndex "+rep.headIndex+" sentID "+rep.sentNum+" "+rep.mentionSpan+" = "+ref.getName()+ref.getWordIndex());
 					tempRef = ref;
 					break;
 				}
@@ -947,6 +948,7 @@ public class TextAnalyzer {
 					for(ExtractedObject a : _toCheck){
 						if(a.getWordIndex() == mention.headIndex && mention.mentionSpan.contains(a.getName()) 
 												&& a.getOrigin().getSentenceID() == mention.sentNum) {
+							System.out.println("----- "+a.getWordIndex()+", "+a.getName()+" "+a.getDeterminer()+" "+a.needsResolve()+" \n"+a.getOrigin());
 							a.setReference(tempRef);
 							a.setResolve(true);
 						}
@@ -956,9 +958,9 @@ public class TextAnalyzer {
 			}
 		}
 
-//		System.out.println("-REP: headIndex "+rep.headIndex+" sentID "+rep.sentNum+" "+rep.mentionSpan+" = "+ref.getName()+ref.getWordIndex());
+//		
 //
-//		System.out.println("----- "+a.getWordIndex()+", "+a.getName()+" "+a.getDeterminer()+" "+a.needsResolve()+" \n"+a.getOrigin());
+//		
 
 //			for(ExtractedObject a:_toCheck) {
 //				System.out.println("----- "+a.getWordIndex()+", "+a.getName()+" "+a.getDeterminer()+" "+a.needsResolve()+" "+a.getOrigin());
